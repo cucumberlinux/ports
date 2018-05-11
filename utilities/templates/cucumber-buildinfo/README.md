@@ -1,5 +1,5 @@
 # Cucumber Template (buildscript-buildinfo format)
-This is a template for the standard Cucumber Linux buildscript format. Documentation on writing buildinfo files in this format can be found in ports/utiltiies/documentation/buildscript-buildinfo. A tool to aid in generating buildinfo files can be found in ports/utilities/tools/generate-cucumber-template.
+This is a template for the standard Cucumber Linux buildscript format. Documentation on writing buildinfo files in this format can be found in ports/utiltiies/documentation/cucumber-buildinfo. A tool to aid in generating buildinfo files can be found in ports/utilities/tools/generate-cucumber-buildinfo-template.
 
 This format splits buildscript into to separate files: a .buildscript file and a .buildinfo file. The files server the following two distinct purposes:
 

@@ -1,0 +1,77 @@
+#!/bin/bash
+
+# Copyright 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+BASEDIR=$(dirname $0)
+
+# Package name
+if [ $# -lt 1 ]; then
+	echo Enter the name of the package to create the buildinfo for
+	read NAME
+else
+	NAME=$1
+fi
+
+# Copy template to directory
+echo Creating template buildinfo directory for ${NAME}.
+mkdir ./$NAME
+cp -r $BASEDIR/../templates/cucumber-buildinfo/{slack-desc,template.build{info,script}} ./$NAME
+
+# Rename
+mv ./$NAME/{template,$NAME}.buildscript
+mv ./$NAME/{template,$NAME}.buildinfo
+sed -i ./$NAME/${NAME}.buildinfo -e "s|insert_package_name|$NAME|g"
+sed -i ./$NAME/slack-desc -e "s|appname|$NAME|g"
+
+# Set pkg_tarball_name
+echo "If the name of the package as it appears in the source tarball is different than the package's actual name, enter the name from the tarball here. Otherwise, leave this blank and press enter."
+read TARNAME
+if [ ! -z "$TARNAME" ]; then
+	sed -i ./$NAME/${NAME}.buildinfo -e "s|insert_package_tarball_name|$TARNAME|g"
+else
+	sed -i ./$NAME/${NAME}.buildinfo -e "/pkg_tarball_name=insert_package_tarball_name/d"
+fi
+
+# Set pkg_version
+echo Enter the version of the package:
+read VERSION
+sed -i ./$NAME/${NAME}.buildinfo -e "s|insert_package_version|$VERSION|g"
+
+# Set version
+cat << EOF
+ Enter the URL to download the source tarball from. In the case of multiple URLs, enter them as a space separated list. Please use the following variables when possible:
+\${pkg_name}		The name of the package.
+\${pkg_tarball_name}	The name of the package as it appears in the source
+			tarball.
+\${pkg_version}		The version of the package to download.
+EOF
+read URL
+sed -i ./$NAME/${NAME}.buildinfo -e "s|insert_package_url|$URL|g"
+
+# Set pkg_version
+echo Enter any build time dependencies for $NAME as a space separated list. glibc, gcc and binutils are implicit and do not need to be entered. If there are no build time dependencies, leave this blank and press enter.
+read BUILDDEPS
+sed -i ./$NAME/${NAME}.buildinfo -e "s|insert_package_dependencies|$BUILDDEPS|g"
+
+cat << EOF
+The template has been created for ${NAME}. Make sure to edit slack-desc and customize ${NAME}.buildinfo to fit your needs.
+EOF
+

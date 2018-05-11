@@ -23,6 +23,7 @@
 # Cucumber Linux Buildinfo for insert_package_name
 
 pkg_name=insert_package_name
+pkg_tarball_name=insert_package_tarball_name
 pkg_version=insert_package_version
 pkg_url=(insert_package_url)
 pkg_build_dependencies=(insert_package_dependencies)
