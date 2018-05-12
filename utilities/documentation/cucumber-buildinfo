@@ -86,6 +86,9 @@ BUILD		The build number of the package. This is the text after the
 		last dash but before the file extension in the binary package
 		tarball name.
 MAXJOBS		The maximum number of make jobs to run in parallel.
+OWD		The original working directory for the package. This is the
+		directory that *.buildscript and *.buildinfo are located in, as
+		well as the package sources.
 
 Additionally, the following variables are set by the buildscript driver, but can
 be used only in the build function:
