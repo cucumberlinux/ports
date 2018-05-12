@@ -58,10 +58,10 @@ sed -i ./$NAME/${NAME}.buildinfo -e "s|insert_package_version|$VERSION|g"
 # Set version
 cat << EOF
  Enter the URL to download the source tarball from. In the case of multiple URLs, enter them as a space separated list. Please use the following variables when possible:
-\${pkg_name}		The name of the package.
-\${pkg_tarball_name}	The name of the package as it appears in the source
-			tarball.
-\${pkg_version}		The version of the package to download.
+NAME            The name of the package (i.e. python3)
+VERSION         The version of the package to build (i.e. 3.6.5)
+TARNAME         The name of the package as it appears in the source tarball
+		(i.e. Python).
 EOF
 read URL
 sed -i ./$NAME/${NAME}.buildinfo -e "s|insert_package_url|$URL|g"

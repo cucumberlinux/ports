@@ -1,0 +1,215 @@
+                     Cucumber Linux Buildinfo Documentation
+
+Contents:
+  1. Purpose
+  2. Usage
+  3. Variables
+     A. Global Variables Set in the Buildinfo File
+     B. Variables Set by the Buildscript Driver
+  4. Functions
+     A. Special Functions in the Buildinfo File
+     B. Functions Defined by the Buildscript Driver
+  5. Checksum/Signature Verification
+  6. Creating a Buildinfo File and Building a Package
+     A. Creating the Buildinfo File
+     B. Building a Package
+
+§1. Purpose
+
+The buildinfo file exsists to provide information to the build system about how
+to build a package. It provides the information necessary to download the
+package sources and build the binary package from those sources.
+
+§2. Usage
+
+The buildinfo file works in conjunction with a driver: the buildscript file.
+These are both Bash scripts. When the .buildscript is run, it sources the
+.buildinfo file with the same basename. For example, foo.buildscript will
+source foo.buildinfo when it is run. It is the job of the buildinfo file to set
+certain variables and define certain functions for the buildscript to use. The
+buildscript should not ever be edited when creating a package.
+
+When the buildscript is run, it sources the corresponding buildinfo file. It
+then performs one of the following actions, depending on what value was passed
+as the first argument:
+
+  * download - Downloads the source tarballs and other source files from the
+    upstream provider.
+  * verify - Verifies the checksums/signatures of the downloaded source
+    tarballs and files.
+  * builddeps - Lists the build time dependencies for this package. These are
+    defined in the *.buildinfo file by setting the BUILDDEPS to an
+    array containing the names of the packages it depends on, as they appear in
+    the Cucumber Linux source/ports tree.
+  * help - Displays this message.
+  * no argument|build - Builds the package. The following buildscript variables
+    can be overridden by setting them in the buildscript's environment:
+    MAXJOBS, OUTDIR and BUILDDIR.
+
+§3. Variables
+
+§§A. Global Variables Set in the Buildinfo File
+
+Buildinfo files are required to define several global variables. These
+variables set values that are used by the buildscript driver. The following
+variables are required:
+
+NAME		The name of the package (i.e. python)
+VERSION		The version of the package to build (i.e. 3.6.5)
+URL		An array of the upstream URLs to download the package sources
+		from. You should use the NAME, VERSION and TARNAME variables as
+		much as possible in the URL and hardcode as little as possible.
+BUILDDEPS	An array of build time dependencies for the package. The package
+		names in this array should appear exactly as they do in the
+		ports tree.
+
+The following variable can optionally be defined:
+
+TARNAME		The name of the package as it appears in the source tarball.
+		This need be defined only if the name as it appears in the
+		tarball is different from NAME. If it is not defined, it will
+		be automatically set to the value of NAME. For example, python3
+		package has NAME=python3, but the Python source tarball is named
+		Python-3.6.5.tar.xz. In this case, you would use TARNAME=Python
+
+§§B. Variables Set by the Buildscript Driver
+
+There are several additional variables set by the buildscript driver. These can
+be referenced within the functions of the buildinfo file only; they cannot be
+referenced from the global scope (i.e. you cannot use them when defining global
+variables).
+
+The following variables are set by the buildscript driver and can be used in any
+function:
+
+BUILD		The build number of the package. This is the text after the
+		last dash but before the file extension in the binary package
+		tarball name.
+PACKAGE		The title of the binary package tarball. This is defined as
+		$NAME-$VERSION-$CUCARCH-$BUILD, consistent with the pkgtools
+		naming convention.
+MAXJOBS		The maximum number of make jobs to run in parallel.
+
+Additionally, the following variables are set by the buildscript driver, but can
+be used only in the build function:
+
+OUTDIR		The directory to output the binary package to. 
+BUILDDIR	The temporary directory to build and stage the package in.
+SRCDIR		The directory for the package's source tree to reside in. This
+		is the current working directory upon entering the build
+		function.
+DESTDIR		The destination directory to stage the binary package in. This
+		is the directory that will be compressed with makepkg to build
+		the binary package.
+
+§4. Functions
+
+§§A. Special Functions in the Buildinfo File
+
+You are free to define functions in the buildinfo file; however, there is one
+restriction: the functions cannot begin with drv_ or pkgapi_. These function
+names are reserved for the buildscript driver and build system api
+respectively.
+
+Additionally, there are two special functions: `build` and `verify`.
+
+The `build` function is required to be defined in every buildinfo file. It
+should run the commands necessary to build the actual package, starting with
+extracting the source tarball and ending immediately before compressing the
+package into a *.txz file with makepkg.
+
+The `verify` function is optional. If it does exist, it will be called during
+the signature/checksum verification process. It should perform any required to
+verify the integrity of any download sources beyond verifying the checksums in
+the files sha512sums, sha256sums, sha1sums, shasums and md5sums (these are
+handled automatically by the buildscript driver).
+
+§§B. Functions Defined by the Buildscript Driver
+
+There are several functions defined by the buildscript driver that can be used
+in in the buildinfo file. These functions collectively compose the pkgapi. When
+writing buildinfo files, you should use these functions whenever possible. This
+makes it easier to update the package build process in the future. The following
+functions are defined:
+
+pkgapi_apply_patches
+# Applies any patches located in $OWD/patches to the current directory.
+# Arguments:
+#       none
+# Returns: 0 if all patches were successfully applied, or 1 if a patch failed to
+#       apply.
+
+pkgapi_strip
+# Strips any binaries and libraries in the $DESTDIR directory of their debugging
+# symbols.
+# Arguments:
+#       none
+# Returns: nothing
+
+pkgapi_copy_package_scripts
+# Copies the install scripts (slack-desc and doinst.sh) from $OWD to
+# $DESTDIR/install. If $DESTDIR/install does not exist, it will be created.
+# Arguments:
+#       none
+# Returns: nothing
+
+pkgapi_make
+# Runs make, passing through any arguments and automatically handling parallel
+# builds.
+# Arguments:
+#       $@  Arguments to pass to make.
+# Returns: 0 if make exited successfully, or 1 if make exited with a failure.
+
+§5. Checksum/Signature Verification
+
+When running `./iproute2.buildscript verify`, the following actions occur:
+1. If the file 'sha512sums' exists, verify those SHA512 checksums
+2. If the file 'sha256sums' exists, verify those SHA256 checksums
+3. If the file 'sha1sums' exists, verify those SHA1 checksums
+4. If the file 'shasums' exists, verify those SHA1 checksums
+5. If the file 'md5sums' exists, verify those MD5 checksums
+6. Run the 'verify' function in iproute2.buildinfo
+
+If any of these steps fails (i.e. exits with a non-zero status), then the
+checksum/signature verification step fails. If all of them succeed, the
+checksum/signature verification step succeeds.
+
+The checksum files should contain entries in the format used by the `sha256sum`
+program.
+
+The 'verify' function in *.buildinfo is optional; if it is not present then
+only steps 1 through 5 will be run. The reason for supporting a custom 'verify'
+function is to allow for signature verification; the process for verifying
+signatures varies significantly from one package to the next, so it is
+necessary for this to be defined on a per package basis.
+
+§6. Creating a Buildinfo File and Building a Package
+
+§§A. Creating the Buildinfo File
+
+There is a handy script to aid in creating buildinfo files located at
+ports/utilities/tools/generate-cucumber-buildinfo-template. This script is self
+guided, so run it and it will create a new directory in your current directory
+containing the slack-desc, buildscript and buildinfo files.
+
+It will then be necessary to then edit the slack-desc file to contain an actual
+description of the package.
+
+Then you will likely need to modify the buildinfo file to work for your package.
+
+Finally, you will have to create a file containing the checksums of the source
+files that are specified by $URL. You should get these checksums from a trusted
+upstream source. In the event that there are multiple types of checksums for
+you to choose from, choose the one highest up on the list in section 5.
+
+§§B. Building a Package
+
+Once you have written a buildinfo file, the binary package can be build by
+doing the following:
+1. Run `./package_name.buildscript download`. This will download the source
+   files and save them to the package's directory.
+2. Run `./package_name.builscript verify`. This will verify the checksums of
+   the download source files to ensure that they were not corrupted en transit
+   or tampered with.
+3. As root, run `./package_name` to build the binary package.
+

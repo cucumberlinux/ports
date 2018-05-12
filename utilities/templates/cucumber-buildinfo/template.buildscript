@@ -92,12 +92,15 @@ BASENAME=$( basename $0 | rev | cut -d . -f 2- | rev )
 
 # Downloads the source for this package
 drv_download () {
-	if [ -z "$pkg_url" ]; then
-		echo "Error downloading source for $BASENAME: no pkg_url is present in ${BASENAME}.buildinfo"
+	if [ -z "$URL" ]; then
+		echo "Error downloading source for $BASENAME: no URL is present in ${BASENAME}.buildinfo"
 		exit 2
 	fi
 
-	wget -c ${pkg_url[*]} || exit 1
+	for url in ${URL[@]}; do
+		echo Downloading $url
+		curl -# -O $url || exit 1
+	done
 }
 
 # Verifies the integrity of the downloaded source code
@@ -138,7 +141,7 @@ drv_verify () {
 
 # Lists the build time dependencies for this package
 drv_builddeps () {
-	echo ${pkg_build_dependencies[*]}
+	echo ${BUILDDEPS[*]}
 }
 
 # Builds the package
@@ -218,7 +221,7 @@ argument to the script is. It supports the following arguments:
   * verify - Verifies the checksums/signatures of the downloaded source
     tarballs and files.
   * builddeps - Lists the build time dependencies for this package. These are
-    defined in the *.buildinfo file by setting the pkg_build_dependencies to an
+    defined in the *.buildinfo file by setting the BUILDDEPS to an
     array containing the names of the packages it depends on, as they appear in
     the Cucumber Linux source/ports tree.
   * help - Displays this message.
@@ -238,9 +241,7 @@ OWD=$(realpath $(dirname $0))
 source $OWD/${BASENAME}.buildinfo
 
 # Set some global variables
-NAME=$pkg_name
-TARNAME=${pkg_tarball_name:-$NAME}
-VERSION=${VERSION:-$pkg_version}
+TARNAME=${TARNAME:-$NAME}
 BUILD=${BUILD:-1}
 PACKAGE=$NAME-$VERSION-$CUCARCH-$BUILD
 MAXJOBS=${MAXJOBS:-4}
