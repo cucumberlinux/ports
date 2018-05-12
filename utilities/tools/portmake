@@ -1,0 +1,169 @@
+#!/bin/bash
+
+# Copyright 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+
+# The location of the ports tree.
+PORTS_TREE=/usr/ports
+
+# The directory to place binary packages in
+PACKAGE_DIR=/opt/packages
+
+# An array of the repositories to enable in the ports tree
+ENABLED_REPOSITORIES=(cucumber community)
+
+# An array of packages to exclude when updating from the system from the ports tree.
+EXCLUDE_PACKAGE=()
+
+COLOR_FAIL="\033[1;31m"
+COLOR_WARN="\033[1;33m"
+COLOR_PASS="\033[1;32m"
+COLOR_INFO="\033[1;36m"
+COLOR_NORMAL="\033[0m"
+
+# Displays a help message.
+portmake_help () {
+	cat <<EOF
+Usage: $0 <action> [package]
+
+The package argument is optional. If it is not included, portmake will build the
+package in the current directory.
+
+Supported Actions:
+help		Displays this message.
+build-only	Build the package only; do not download the source, verify the
+		source, build dependencies or install the built package.
+download	Downloads the source tarballs for a package and verifies their
+		integrity.
+download-only	Download the source tarballs and stop; do not verify their
+		integrity.
+verify-only	Verify the integrity of the source tarballs and stop.
+
+Exit Codes:
+0	Success
+1	Invalid arguments
+2	Failed to download source
+3	Failed to verify source
+4	Failed to build package
+5	Failed to install package
+EOF
+}
+
+# Build the package only; do not download the source, verify the source, build
+# dependencies or install the built package.
+portmake_build_only () {
+	# Setup the OUTDIR
+	OUTDIR=/tmp/portbuilds/$package  
+	if [ -e $OUTDIR ]; then
+		rm -rf $OUTDIR || exit 4
+	fi
+	mkdir -p $OUTDIR  || exit 4
+	
+	# Build the package
+	echo -e ${COLOR_INFO}Building ${package}${COLOR_NORMAL}
+	eval OUTDIR=$OUTDIR $package_dir/${package}.buildscript build || exit 4
+
+	# Copy the package to the PACKAGE_DIR
+	if [ ! -z "$PACKAGE_DIR" ]; then
+		if [ ! -d $PACKAGE_DIR/$package_group ]; then
+			mkdir -p $PACKAGE_DIR/$package_group || exit 4
+		fi
+		cp $OUTDIR/* $PACKAGE_DIR/$package_group/
+	fi
+}
+
+# Downloads the source tarballs for a package and verifies their integrity.
+portmake_download () {
+	portmake_download_only
+	portmake_verify_only
+}
+
+# Download the source tarballs and stop; do not verify their integrity.
+portmake_download_only () {
+	echo -e ${COLOR_INFO}Downloading source for ${package}${COLOR_NORMAL}
+	eval $package_dir/${package}.buildscript download || exit 2
+}
+
+# Verify the integrity of the source tarballs and stop.
+portmake_verify_only () {
+	echo -e ${COLOR_INFO}Verifying integrity of source for ${package}${COLOR_NORMAL}
+	eval $package_dir/${package}.buildscript verify || exit 3
+}
+
+# Main function
+main () {
+	# Check arguments
+	if [ $# -lt 1 ]; then
+		echo "Usage: $0 <action> [package]"
+		echo "Run \`$0 help\` for a list of supported actions"
+		exit 1
+	fi
+
+	# Set the package variable to the package name and the package_dir
+	# variable to the package's working directory.
+	if [ $# -lt 2 ]; then
+		package=$(echo *.buildscript | rev | cut -d . -f 2- | rev)
+		package_dir=$(realpath $PWD)
+	else
+		package=$2
+		for dir in ${ENABLED_REPOSITORIES[*]}; do
+			package_dir=$(find "$PORTS_TREE/$dir" -name $2 -type d)
+			if [ ! -z "$package_dir" ]; then break; fi
+		done
+		if [ -z "$package_dir" ]; then
+			echo -e "${COLOR_FAIL}Error: package $package does not exist${COLOR_NORMAL}"
+			exit 1
+		fi
+	fi
+
+	# Get the package group
+	# I know this is a giant mess but it works. If you touch it you own it:)
+	rev_package_dir=$(echo $package_dir | rev)
+	package_group_len=$(echo $rev_package_dir | fgrep -b -o /strop/ | cut -d : -f 1)
+	echo rev_package_dir: $rev_package_dir
+	echo package_group_len: $package_group_len
+	package_group=$(dirname $(echo ${rev_package_dir::$package_group_len} | rev))
+	echo package_group: $package_group
+
+	# Main switch
+	case $1 in
+		help)
+			portmake_help
+			;;
+		build-only)
+			portmake_build_only
+			;;
+		download)
+			portmake_download
+			;;
+		download-only)
+			portmake_download_only
+			;;
+		verify-only)
+			portmake_verify_only
+			;;
+		*)
+			echo -e "${COLOR_FAIL}Error: Invalid action $1${COLOR_NORMAL}"
+			echo "Run \`$0 help\` for a list of supported actions"
+			exit 1
+			;;
+	esac
+}
+
+main $@
