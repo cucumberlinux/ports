@@ -25,6 +25,9 @@ PORTS_TREE=/usr/ports
 # The directory to place binary packages in
 PACKAGE_DIR=/opt/packages
 
+# The file to log package builds to
+LOG_FILE=/var/log/portmake.log
+
 # An array of the repositories to enable in the ports tree
 ENABLED_REPOSITORIES=(cucumber community)
 
@@ -42,17 +45,36 @@ portmake_help () {
 	cat <<EOF
 Usage: $0 <action> [package]
 
+The portmake utility uses a buildscript build and install a package from source,
+and optionally allows for recursively building all of a package's build time
+dependencies.
+
 The package argument is optional. If it is not included, portmake will build the
 package in the current directory.
 
 Supported Actions:
 help		Displays this message.
+build		Build the package, downloading and verifying the source if
+		necessary.
 build-only	Build the package only; do not download the source, verify the
 		source, build dependencies or install the built package.
-download	Downloads the source tarballs for a package and verifies their
+build-recursive	Build and install any build time dependencies. Then build the
+		package, downloading and verifying the source if necessary.
+check-installed	Checks if this package is already installed. Evaluates to true
+		and exists with status 0 if it is; otherwise it evaulates to
+		false and exits with status 1.
+check-update	Checks if this package needs to be updated. If any files in the
+		package's source directory have been modified since the package
+		was last built, this evaluates to true and exits with status 0.
+		Otherwise, it evaulates to false and exists with status 1.
+download	Download the source tarballs for a package and verify their
 		integrity.
 download-only	Download the source tarballs and stop; do not verify their
 		integrity.
+install		Install the package. If it is not already build, run
+		build-recursive to build it and install all of its dependencies.
+update		Update the package if it is already installed and check-update
+		evaluates to true.
 verify-only	Verify the integrity of the source tarballs and stop.
 
 Exit Codes:
@@ -65,11 +87,17 @@ Exit Codes:
 EOF
 }
 
+# Build the package, downloading and verifying the source if necessary.
+portmake_build () {
+	portmake_download_only
+	portmake_verify_only
+	portmake_build_only
+}
+
 # Build the package only; do not download the source, verify the source, build
 # dependencies or install the built package.
 portmake_build_only () {
 	# Setup the OUTDIR
-	OUTDIR=/tmp/portbuilds/$package  
 	if [ -e $OUTDIR ]; then
 		rm -rf $OUTDIR || exit 4
 	fi
@@ -86,6 +114,93 @@ portmake_build_only () {
 		fi
 		cp $OUTDIR/* $PACKAGE_DIR/$package_group/
 	fi
+
+	echo -e "$(date --rfc-3339=seconds)\tBuilt package $package_group/$package" >> $LOG_FILE
+}
+
+# Build and install any build time dependencies. Then build the package,
+# downloading and verifying the source if necessary.
+portmake_build_recursive () {
+	# Build and install dependencies
+	for dependency in $(eval $package_dir/${package}.buildscript builddeps);
+	do
+		# Continue if the dependency is already installed
+		if portmake_util_is_package_installed $dependency; then
+			continue
+		fi
+
+		# Otherwise, build it
+		echo -e ${COLOR_INFO}Building dependency: $dependency${COLOR_NORMAL}
+		eval $0 install $dependency 
+		stat=$?
+		if [ $stat -ne 0 ]; then
+			exit $stat
+		fi
+	done
+
+	# Build this package
+	portmake_build
+}
+
+# Utility function to check if a package is installed without exiting the
+# script. Returns true (0) if the packate $1 is installed, otherwise returns
+# false (1).
+portmake_util_is_package_installed () {
+	if [ -z "$(ls /var/log/packages | egrep '^'$1'-[^-]+-[^-]+-[^-]+$')" ]; then
+		return 1
+	else
+		return 0
+	fi
+}
+
+# Checks if this package is already installed. Evaluates to true and exists
+# with status 0 if it is; otherwise it evaulates to false and exits with status
+# 1.
+portmake_check_installed () {
+	if portmake_util_is_package_installed $package; then
+		echo ${package} is installed.
+		exit 0
+	else
+		echo ${package} is not installed.
+		exit 1
+	fi
+}
+
+# Utility function to check if a package has an update available without
+# exiting the script. Returns true (0) if the package $1 has an update
+# available, otherwise returns false (1).
+portmake_util_check_update () {
+	# Check if the package is installed
+	local pkg_file=$(ls /var/log/packages | egrep '^'$1'-[^-]+-[^-]+-[^-]+$')
+	if [ -z "$pkg_file" ]; then
+		return 1
+	fi
+
+	# Check if an update is available
+	changed_files=$(find $PORTS_TREE/ -newer /var/log/packages/$pkg_file -path "*/$1/*" | egrep -v "^$PORTS_DIR/utilities/" | egrep -v '.buildscript$')
+	if [ -z "$changed_files" ]; then
+		return 1
+	else
+		return 0
+	fi
+
+}
+
+# Checks if this package needs to be updated. If any files in the package's
+# source directory have been modified since the package was last build, this
+# evaluates to true and exits with status 0.  Otherwise, it evaulates to false
+# and exists with status 1.
+portmake_check_update () {
+	if ! portmake_util_is_package_installed $package; then
+		echo ${package} is not installed.
+		exit 1
+	elif portmake_util_check_update $package; then
+		echo ${package} has an update available.
+		exit 0
+	else
+		echo ${package} does not have an update avaiable.
+		exit 1
+	fi
 }
 
 # Downloads the source tarballs for a package and verifies their integrity.
@@ -98,6 +213,27 @@ portmake_download () {
 portmake_download_only () {
 	echo -e ${COLOR_INFO}Downloading source for ${package}${COLOR_NORMAL}
 	eval $package_dir/${package}.buildscript download || exit 2
+}
+
+# Install the package. If it is not already build, run build-recursive to build
+# it and install all of its dependencies.
+portmake_install () {
+	portmake_build_recursive
+	upgradepkg --reinstall --install-new $OUTDIR/*.t?z || exit 5
+}
+
+# Update the package if it is already installed and check-update evaluates to
+# true.
+portmake_update () {
+	if ! portmake_util_is_package_installed $package; then
+		echo $package is not installed, skipping.
+		exit 0
+	elif ! portmake_util_check_update $package; then
+		echo $package does not have an update avaiable.
+	fi
+
+	portmake_build
+	upgradepkg --reinstall --install-new $OUTDIR/*.t?z || exit 5
 }
 
 # Verify the integrity of the source tarballs and stop.
@@ -136,21 +272,42 @@ main () {
 	# I know this is a giant mess but it works. If you touch it you own it:)
 	rev_package_dir=$(echo $package_dir | rev)
 	package_group_len=$(echo $rev_package_dir | fgrep -b -o /strop/ | cut -d : -f 1)
-	package_group=$(dirname $(echo ${rev_package_dir::$package_group_len} | rev))
+	package_group=$(dirname $(echo ${rev_package_dir::$package_group_len} | rev) 2> /dev/null)
+
+	# Set some variables
+	OUTDIR=/tmp/portbuilds/$package  
 
 	# Main switch
 	case $1 in
 		help)
 			portmake_help
 			;;
+		build)
+			portmake_build
+			;;
 		build-only)
 			portmake_build_only
+			;;
+		build-recursive)
+			portmake_build_recursive
+			;;
+		check-installed)
+			portmake_check_installed
+			;;
+		check-update)
+			portmake_check_update
 			;;
 		download)
 			portmake_download
 			;;
 		download-only)
 			portmake_download_only
+			;;
+		install)
+			portmake_install
+			;;
+		update)
+			portmake_update
 			;;
 		verify-only)
 			portmake_verify_only
