@@ -1,0 +1,107 @@
+#!/bin/bash
+########################################################################
+# Begin iptables
+#
+# Description : Loads the system configuration for iptables
+#
+# Authors     : Scott Court (Z5T1@Z5T1.com)
+#
+# Version     : Cucumber 1.0
+#
+# Notes       :
+#
+########################################################################
+
+### BEGIN SYMLINK INFO
+# This section controls the name of the symlinks that are created in
+# /etc/rc.d/rc?.d by chkconfig and the system init setup script.
+# START_LINK_NAME	S08iptables
+# KILL_LINK_NAME	K92iptables
+### END SYMLINK INFO
+
+### BEGIN INIT INFO
+# Provides:		iptables
+# Default-Start: 3 4 5
+# Default-Stop: 0 1 2 6
+### END INIT INFO
+
+. /lib/lsb/init-functions
+
+case "${1}" in
+   start)
+      log_info_msg "Starting iptables..."
+      if [ -e /etc/iptables/rules ]; then
+		iptables-restore < /etc/iptables/rules
+      fi
+      if [ -e /etc/iptables/rules6 ]; then
+		ip6tables-restore < /etc/iptables/rules6
+      fi
+      evaluate_retval
+      ;;
+
+   clear|stop)
+      log_info_msg "Clearing system iptables..."
+      /sbin/iptables --policy INPUT   ACCEPT
+      /sbin/iptables --policy OUTPUT  ACCEPT
+      /sbin/iptables --policy FORWARD ACCEPT
+      /sbin/iptables           --flush
+      /sbin/iptables -t nat    --flush
+      /sbin/iptables -t mangle --flush
+      /sbin/iptables           --delete-chain
+      /sbin/iptables -t nat    --delete-chain
+      /sbin/iptables -t mangle --delete-chain
+      /sbin/ip6tables --policy INPUT   ACCEPT
+      /sbin/ip6tables --policy OUTPUT  ACCEPT
+      /sbin/ip6tables --policy FORWARD ACCEPT
+      /sbin/ip6tables           --flush
+      /sbin/ip6tables -t nat    --flush
+      /sbin/ip6tables -t mangle --flush
+      /sbin/ip6tables           --delete-chain
+      /sbin/ip6tables -t nat    --delete-chain
+      /sbin/ip6tables -t mangle --delete-chain
+      evaluate_retval
+      ;;
+
+   panic)
+      log_info_msg "Locking system iptables firewall..."
+      /sbin/iptables --policy INPUT   DROP
+      /sbin/iptables --policy OUTPUT  DROP
+      /sbin/iptables --policy FORWARD DROP
+      /sbin/iptables           --flush
+      /sbin/iptables -t nat    --flush
+      /sbin/iptables -t mangle --flush
+      /sbin/iptables           --delete-chain
+      /sbin/iptables -t nat    --delete-chain
+      /sbin/iptables -t mangle --delete-chain
+      /sbin/iptables -A INPUT  -i lo -j ACCEPT
+      /sbin/iptables -A OUTPUT -o lo -j ACCEPT
+      /sbin/ip6tables --policy INPUT   DROP
+      /sbin/ip6tables --policy OUTPUT  DROP
+      /sbin/ip6tables --policy FORWARD DROP
+      /sbin/ip6tables           --flush
+      /sbin/ip6tables -t nat    --flush
+      /sbin/ip6tables -t mangle --flush
+      /sbin/ip6tables           --delete-chain
+      /sbin/ip6tables -t nat    --delete-chain
+      /sbin/ip6tables -t mangle --delete-chain
+      /sbin/ip6tables -A INPUT  -i lo -j ACCEPT
+      /sbin/ip6tables -A OUTPUT -o lo -j ACCEPT
+      evaluate_retval
+      ;;
+
+   save)
+      log_info_msg "Saving iptables configuration..."
+      iptables-save > /etc/iptables/rules
+      ip6tables-save > /etc/iptables/rules6
+      evaluate_retval
+      ;;
+   *)
+      echo "Usage: ${0} {start|panic|clear|stop|save}"
+      exit 1
+      ;;
+esac
+
+exit 0
+
+# End scriptname
+

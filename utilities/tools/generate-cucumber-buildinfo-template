@@ -47,7 +47,7 @@ read TARNAME
 if [ ! -z "$TARNAME" ]; then
 	sed -i ./$NAME/${NAME}.buildinfo -e "s|insert_package_tarball_name|$TARNAME|g"
 else
-	sed -i ./$NAME/${NAME}.buildinfo -e "/pkg_tarball_name=insert_package_tarball_name/d"
+	sed -i ./$NAME/${NAME}.buildinfo -e "/TARNAME=insert_package_tarball_name/d"
 fi
 
 # Set pkg_version
