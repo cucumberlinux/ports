@@ -83,10 +83,12 @@ BUILDDEPS	An array of build time dependencies for the package. The package
 			make
 			patch
 			perl
+			pkgtools
 			sed
 			tar
 			texinfo
 			util-linux
+			which
 			xz
 
 The following variable can optionally be defined:
