@@ -85,14 +85,14 @@ function:
 BUILD		The build number of the package. This is the text after the
 		last dash but before the file extension in the binary package
 		tarball name.
-PACKAGE		The title of the binary package tarball. This is defined as
-		$NAME-$VERSION-$CUCARCH-$BUILD, consistent with the pkgtools
-		naming convention.
 MAXJOBS		The maximum number of make jobs to run in parallel.
 
 Additionally, the following variables are set by the buildscript driver, but can
 be used only in the build function:
 
+PACKAGE		The title of the binary package tarball. This is defined as
+		$NAME-$VERSION-$CUCARCH-$BUILD, consistent with the pkgtools
+		naming convention.
 OUTDIR		The directory to output the binary package to. 
 BUILDDIR	The temporary directory to build and stage the package in.
 SRCDIR		The directory for the package's source tree to reside in. This
