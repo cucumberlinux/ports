@@ -1,0 +1,8 @@
+# Source tarballs
+*.tar.gz
+*.tar.xz
+*.tar.bz2
+*.tar.lz
+
+# Binary package archives
+*.t?z
