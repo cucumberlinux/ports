@@ -136,10 +136,7 @@ main () {
 	# I know this is a giant mess but it works. If you touch it you own it:)
 	rev_package_dir=$(echo $package_dir | rev)
 	package_group_len=$(echo $rev_package_dir | fgrep -b -o /strop/ | cut -d : -f 1)
-	echo rev_package_dir: $rev_package_dir
-	echo package_group_len: $package_group_len
 	package_group=$(dirname $(echo ${rev_package_dir::$package_group_len} | rev))
-	echo package_group: $package_group
 
 	# Main switch
 	case $1 in
