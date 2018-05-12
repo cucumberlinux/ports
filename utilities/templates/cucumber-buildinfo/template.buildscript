@@ -28,7 +28,7 @@
 ################################################################################
 
 # Driver Version
-DRV_VERSION=0.0.1
+DRV_VERSION=0.0.2
 
 ######################## Cucumber Linux Buildscript API ########################
 
@@ -99,8 +99,12 @@ drv_download () {
 
 	pushd $OWD
 	for url in ${URL[@]}; do
-		echo Downloading $url
-		curl -# -O $url || exit 1
+		if [ -e $(basename $url) ]; then
+			echo $(basename $url) already exists. Skipping. Delete it if you would like to redownload it.
+		else
+			echo Downloading $url
+			curl -# -O $url || exit 1
+		fi
 	done
 	popd
 }
