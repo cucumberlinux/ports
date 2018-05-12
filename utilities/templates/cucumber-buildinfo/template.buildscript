@@ -107,6 +107,7 @@ drv_download () {
 
 # Verifies the integrity of the downloaded source code
 drv_verify () {
+	pushd $OWD
 	# Verify an checksums present in $OWD
 	if [ -e "$OWD/sha512sums" ]; then
 		echo Checking sha512sums
@@ -138,6 +139,7 @@ drv_verify () {
 			exit 3
 		fi
 	fi
+	popd
 	echo Source checksum/signature verification completeled successfully.
 }
 
