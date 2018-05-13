@@ -145,6 +145,12 @@ portmake_build_recursive () {
 	# Build and install dependencies
 	for dependency in $(eval $package_dir/${package}.buildscript builddeps);
 	do
+		# If the dependency is installed already, skip it.
+		if portmake_util_is_package_installed $dependency; then
+			continue
+		fi
+
+		# Otherwise, build it now
 		echo -e ${COLOR_INFO}Building dependency: $dependency${COLOR_NORMAL}
 		eval $0 install-new $dependency 
 		stat=$?
