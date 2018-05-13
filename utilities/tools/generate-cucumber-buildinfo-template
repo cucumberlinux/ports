@@ -33,10 +33,10 @@ fi
 # Copy template to directory
 echo Creating template buildinfo directory for ${NAME}.
 mkdir ./$NAME
-cp -r $BASEDIR/../templates/cucumber-buildinfo/{slack-desc,template.build{info,script}} ./$NAME
+cp -r $BASEDIR/../templates/cucumber-buildinfo/{slack-desc,template.buildinfo} ./$NAME
+ln -s $(realpath "$BASEDIR/../templates/cucumber-buildinfo/template.buildscript" --relative-to ./$NAME) ./$NAME/${NAME}.buildscript
 
 # Rename
-mv ./$NAME/{template,$NAME}.buildscript
 mv ./$NAME/{template,$NAME}.buildinfo
 sed -i ./$NAME/${NAME}.buildinfo -e "s|insert_package_name|$NAME|g"
 sed -i ./$NAME/slack-desc -e "s|appname|$NAME|g"
