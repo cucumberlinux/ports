@@ -35,6 +35,11 @@ ENABLED_REPOSITORIES=(cucumber community)
 # tree.
 EXCLUDE_PACKAGE=()
 
+# A string to prefix the build number with for all packages built in the ports
+# system. Note the the `update-all` option will update packages only if their
+# build prefix matches this.
+BUILD_PREFIX=localport_
+
 COLOR_FAIL="\033[1;31m"
 COLOR_WARN="\033[1;33m"
 COLOR_PASS="\033[1;32m"
@@ -96,6 +101,10 @@ Exit Codes:
 3	Failed to verify source
 4	Failed to build package
 5	Failed to install package
+
+Influential Environment Variables:
+BUILD		This variable will be appended to the end of the build number
+		portion of each package built.
 EOF
 }
 
@@ -117,7 +126,7 @@ portmake_build_only () {
 	
 	# Build the package
 	echo -e ${COLOR_INFO}Building ${package}${COLOR_NORMAL}
-	eval OUTDIR=$OUTDIR $package_dir/${package}.buildscript build || exit 4
+	eval OUTDIR=$OUTDIR BUILD=$PKG_BUILD $package_dir/${package}.buildscript build || exit 4
 
 	# Copy the package to the PACKAGE_DIR
 	if [ ! -z "$PACKAGE_DIR" ]; then
@@ -261,19 +270,18 @@ portmake_update_all () {
 	echo -e ${COLOR_INFO}Updating all packages${COLOR_NORMAL}
 	echo -e "$(date --rfc-3339=seconds)\tUpdating all packages" >> $LOG_FILE
 
-	for buildscript in $(find "$PORTS_TREE/" -name "*.buildscript" | egrep -v "^$PORTS_TREE/utilities"); do
-		if [ -z "$buildscript" ]; then
-			continue
-		fi
-		local pkg=$(basename $(dirname $buildscript))
-		eval $0 update $pkg || exit 1
+	#for buildscript in $(find "$PORTS_TREE/" -name "*.buildscript" | egrep -v "^$PORTS_TREE/utilities"); do
+	for pkg in $(ls /var/log/packages | egrep "${BUILD_PREFIX}[^-]+$"); do
+		local portname=$(echo $pkg | rev | cut -d - -f 4- | rev)
+		eval $0 update $portname || exit 1
 		local stat=$?
 		if [ $stat -gt 1 ]; then
-			echo -e ${COLOR_FAIL}Failed to update $pkg${COLOR_NORMAL}
-			echo -e "$(date --rfc-3339=seconds)\tFailed to update $pkg" >> $LOG_FILE
+			echo -e ${COLOR_FAIL}Failed to update $portname${COLOR_NORMAL}
+			echo -e "$(date --rfc-3339=seconds)\tFailed to update $portname" >> $LOG_FILE
+			exit $stat
 		fi
 	done
-	
+
 	echo -e ${COLOR_PASS}Update completed successfully${COLOR_NORMAL}
 	echo -e "$(date --rfc-3339=seconds)\tUpdate completed successfully" >> $LOG_FILE
 }
@@ -318,6 +326,7 @@ main () {
 
 	# Set some variables
 	OUTDIR=/tmp/portbuilds/$package  
+	PKG_BUILD=${BUILD_PREFIX}${BUILD:-1}
 
 	# Main switch
 	case $1 in
