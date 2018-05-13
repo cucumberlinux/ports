@@ -174,7 +174,8 @@ portmake_util_check_update () {
 	fi
 
 	# Check if an update is available
-	changed_files=$(find $PORTS_TREE/ -newer /var/log/packages/$pkg_file -path "*/$1/*" | egrep -v "^$PORTS_DIR/utilities/" | egrep -v '.buildscript$')
+	local pkg_ports_dir=$(dirname $(find "$PORTS_TREE/" -name "$1.buildscript"))
+	local changed_files=$(find "$pkg_ports_dir" -newer "/var/log/packages/$pkg_file" | egrep -v '.buildscript$')
 	if [ -z "$changed_files" ]; then
 		return 1
 	else
@@ -184,7 +185,7 @@ portmake_util_check_update () {
 }
 
 # Checks if this package needs to be updated. If any files in the package's
-# source directory have been modified since the package was last build, this
+# source directory have been modified since the package was last built, this
 # evaluates to true and exits with status 0.  Otherwise, it evaulates to false
 # and exists with status 1.
 portmake_check_update () {
@@ -238,6 +239,7 @@ portmake_update () {
 		exit 0
 	elif ! portmake_util_check_update $package; then
 		echo $package does not have an update avaiable.
+		exit 0
 	fi
 
 	portmake_build
