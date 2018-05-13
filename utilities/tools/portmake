@@ -22,16 +22,17 @@
 # The location of the ports tree.
 PORTS_TREE=/usr/ports
 
-# The directory to place binary packages in
+# The directory to place binary packages in after building them.
 PACKAGE_DIR=/opt/packages
 
-# The file to log package builds to
+# The file to log package builds to.
 LOG_FILE=/var/log/portmake.log
 
-# An array of the repositories to enable in the ports tree
+# An array of the repositories to enable in the ports tree.
 ENABLED_REPOSITORIES=(cucumber community)
 
-# An array of packages to exclude when updating from the system from the ports tree.
+# An array of packages to exclude when updating from the system from the ports
+# tree.
 EXCLUDE_PACKAGE=()
 
 COLOR_FAIL="\033[1;31m"
@@ -52,7 +53,13 @@ dependencies.
 The package argument is optional. If it is not included, portmake will build the
 package in the current directory.
 
-Supported Actions:
+Most Useful Actions:
+The following actions will likely be most useful to the average user.
+install-new	Install a package.
+update		Update an individual package.
+update-all	Update the entire system.
+
+All Supported Actions:
 help		Displays this message.
 build		Build the package, downloading and verifying the source if
 		necessary.
@@ -78,6 +85,8 @@ install-new	Install the package like the install option, but only if it is
 		not already installed.
 update		Update the package if it is already installed and check-update
 		evaluates to true.
+update-all	Update every package in the ports tree as though it had
+		\`portmake update\` run on it.	
 verify-only	Verify the integrity of the source tarballs and stop.
 
 Exit Codes:
@@ -246,6 +255,29 @@ portmake_update () {
 	upgradepkg --reinstall --install-new $OUTDIR/*.t?z || exit 5
 }
 
+# Update every package in the ports tree as though it had \`portmake update\`
+# run on it.	
+portmake_update_all () {
+	echo -e ${COLOR_INFO}Updating all packages${COLOR_NORMAL}
+	echo -e "$(date --rfc-3339=seconds)\tUpdating all packages" >> $LOG_FILE
+
+	for buildscript in $(find "$PORTS_TREE/" -name "*.buildscript" | egrep -v "^$PORTS_TREE/utilities"); do
+		if [ -z "$buildscript" ]; then
+			continue
+		fi
+		local pkg=$(basename $(dirname $buildscript))
+		eval $0 update $pkg || exit 1
+		local stat=$?
+		if [ $stat -gt 1 ]; then
+			echo -e ${COLOR_FAIL}Failed to update $pkg${COLOR_NORMAL}
+			echo -e "$(date --rfc-3339=seconds)\tFailed to update $pkg" >> $LOG_FILE
+		fi
+	done
+	
+	echo -e ${COLOR_PASS}Update completed successfully${COLOR_NORMAL}
+	echo -e "$(date --rfc-3339=seconds)\tUpdate completed successfully" >> $LOG_FILE
+}
+
 # Verify the integrity of the source tarballs and stop.
 portmake_verify_only () {
 	echo -e ${COLOR_INFO}Verifying integrity of source for ${package}${COLOR_NORMAL}
@@ -273,7 +305,7 @@ main () {
 			if [ ! -z "$package_dir" ]; then break; fi
 		done
 		if [ -z "$package_dir" ]; then
-			echo -e "${COLOR_FAIL}Error: package $package does not exist${COLOR_NORMAL}"
+			echo -e "${COLOR_FAIL}Error: package $package does not exist in the ports tree${COLOR_NORMAL}"
 			exit 1
 		fi
 	fi
@@ -321,6 +353,9 @@ main () {
 			;;
 		update)
 			portmake_update
+			;;
+		update-all)
+			portmake_update_all
 			;;
 		verify-only)
 			portmake_verify_only

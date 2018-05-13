@@ -1,0 +1,21 @@
+                          README - Tool Descriptions
+
+This directory contains a bunch of tools for working with the ports system.
+Here is a brief description of what each one does:
+
+§ generate-cucumber-buildinfo-template
+Generates a template buildinfo directory. This is useful when creating a
+buildinfo for a new package as it automates a good amount of the work. It will
+create a new directory in the current directory and place the buildinfo file
+(along with the other supporting files) in it. The resulting files will require
+some additional editing to work properly. Full documentation for
+generate-cucumber-buildinfo-template tool and buildinfo files can be found in
+ports/utilities/documentation/cucumber-buildinfo
+
+§ portmake
+Automates the process of building packages in the ports tree. It uses the
+buildscript driver to handle many of the tasks (such as downloading the source,
+verifying the integerity of the source, building the package and building
+dependencies). Information on using portmake can be obtained by running
+`portmake help`.
+
