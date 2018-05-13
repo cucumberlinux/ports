@@ -71,8 +71,11 @@ download	Download the source tarballs for a package and verify their
 		integrity.
 download-only	Download the source tarballs and stop; do not verify their
 		integrity.
-install		Install the package. If it is not already build, run
-		build-recursive to build it and install all of its dependencies.
+install		Install the package by running build-recursive to build it,
+		rebuilding the package if it is already installed. Additionally
+		install all of its dependencies.
+install-new	Install the package like the install option, but only if it is
+		not already installed.
 update		Update the package if it is already installed and check-update
 		evaluates to true.
 verify-only	Verify the integrity of the source tarballs and stop.
@@ -124,14 +127,8 @@ portmake_build_recursive () {
 	# Build and install dependencies
 	for dependency in $(eval $package_dir/${package}.buildscript builddeps);
 	do
-		# Continue if the dependency is already installed
-		if portmake_util_is_package_installed $dependency; then
-			continue
-		fi
-
-		# Otherwise, build it
 		echo -e ${COLOR_INFO}Building dependency: $dependency${COLOR_NORMAL}
-		eval $0 install $dependency 
+		eval $0 install-new $dependency 
 		stat=$?
 		if [ $stat -ne 0 ]; then
 			exit $stat
@@ -215,8 +212,19 @@ portmake_download_only () {
 	eval $package_dir/${package}.buildscript download || exit 2
 }
 
-# Install the package. If it is not already build, run build-recursive to build
-# it and install all of its dependencies.
+# Install the package like the install option, but only if it is not already
+# installed.
+portmake_install_new () {
+	if ! portmake_util_is_package_installed $package; then
+		portmake_install
+	else
+		echo $package is already installed, skipping build.
+	fi
+}
+
+# Install the package by running build-recursive to build it, rebuilding the
+# package if it is already installed. Additionally install all of its
+# dependencies.
 portmake_install () {
 	portmake_build_recursive
 	upgradepkg --reinstall --install-new $OUTDIR/*.t?z || exit 5
@@ -305,6 +313,9 @@ main () {
 			;;
 		install)
 			portmake_install
+			;;
+		install-new)
+			portmake_install_new
 			;;
 		update)
 			portmake_update
