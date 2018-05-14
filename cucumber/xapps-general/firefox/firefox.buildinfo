@@ -24,8 +24,12 @@
 
 NAME=firefox
 VERSION=60.0esr
-URL=(https://ftp.mozilla.org/pub/firefox/releases/$VERSION/source/$NAME-$VERSION.source.tar.xz)
+URL=(https://ftp.mozilla.org/pub/firefox/releases/$VERSION/source/$NAME-$VERSION.source.tar.xz{,.asc})
 BUILDDEPS=(gtk+ gtk+3 libnotify nss alsa-lib rustc unzip yasm python2)
+
+verify () {
+	pkgapi_gpg --verify $NAME-$VERSION.source.tar.xz.asc || return 1
+}
 
 build () {
 
