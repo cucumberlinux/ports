@@ -1,0 +1,21 @@
+                            Buildinfo Requirements
+
+The following are requirements must be met when submitting buildinfo files (or
+the equivalent files for other buildscript drivers, such as PKGBUILDs). If any
+one of them is not met, it is grounds for having the submission rejected:
+
+1.  The buildinfo file (or equivalent if usind a different format) must not
+    have any hard coded version numbers. Everywhere the version number needs to
+    be referenced, the $VERSION variable (or equivalent) should be used instead.
+2.  All download links must be listed the URL variable (or equivatlent). And
+    must use variables sufficiently.
+3.  All build dependencies (except for the packages that are included in 
+    stage 1) must be listed.
+4.  There must be some sort of source integreity verification in place. The
+    following verification methods are considered adequate on their own: PGP
+    signatures, SHA512 checksums and SHA256 checksums. SHA1 and MD5 checksums
+    are not adequate on their own; if you use one of these checksums, then you
+    must have at least one other verification method in place as well.
+5.  pkgapi functions must be used whenever possible (for .buildinfo files only).
+6.  The package must build correctly.
+
