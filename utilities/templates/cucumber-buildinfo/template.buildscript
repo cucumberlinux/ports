@@ -28,9 +28,22 @@
 ################################################################################
 
 # Driver Version
-DRV_VERSION=0.0.3
+DRV_VERSION=0.0.4
+
+# Changelog
+# 0.0.4   Added pkgapi_gpg function
 
 ######################## Cucumber Linux Buildscript API ########################
+
+# Runs gpg, passing through any arguments but using the file
+# $OWD/authorized_keys as the keyring instead of the default keyring.
+# Arguments:
+#	$@  Arguments to pass to gpg.
+# Returns: the exit code from gpg.
+pkgapi_gpg () {
+	gpg --no-default-keyring --keyring $OWD/authorized_keys $@
+	return $?
+}
 
 # Applies any patches located in $OWD/patches to the current directory.
 # Arguments:

@@ -164,6 +164,13 @@ writing buildinfo files, you should use these functions whenever possible. This
 makes it easier to update the package build process in the future. The following
 functions are defined:
 
+pkgapi_gpg
+# Runs gpg, passing through any arguments but using the file
+# $OWD/authorized_keys as the keyring instead of the default keyring.
+# Arguments:
+#       $@  Arguments to pass to gpg.
+# Returns: the exit code from gpg.
+
 pkgapi_apply_patches
 # Applies any patches located in $OWD/patches to the current directory.
 # Arguments:
