@@ -10,7 +10,7 @@ create a new directory in the current directory and place the buildinfo file
 (along with the other supporting files) in it. The resulting files will require
 some additional editing to work properly. Full documentation for
 generate-cucumber-buildinfo-template tool and buildinfo files can be found in
-ports/utilities/documentation/cucumber-buildinfo
+ports/utilities/documentation/cucumber-buildinfo.
 
 § portmake
 Automates the process of building packages in the ports tree. It uses the
