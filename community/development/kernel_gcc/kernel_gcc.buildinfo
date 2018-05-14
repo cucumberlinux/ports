@@ -22,13 +22,14 @@
 
 # Cucumber Linux Buildinfo for gcc
 
-NAME=gcc
-VERSION=5.3.0
-URL=(https://ftp.gnu.org/gnu/$NAME/$NAME-$VERSION/$NAME-$VERSION.tar.gz https://ftp.gnu.org/gnu/$NAME/$NAME-$VERSION/$NAME-$VERSION.tar.gz.sig)
+NAME=kernel_gcc
+TARNAME=gcc
+VERSION=7.3.0
+URL=(https://ftp.gnu.org/gnu/$TARNAME/$TARNAME-$VERSION/$TARNAME-$VERSION.tar.gz https://ftp.gnu.org/gnu/$TARNAME/$TARNAME-$VERSION/$TARNAME-$VERSION.tar.gz.sig)
 BUILDDEPS=(gmp mpfr mpc)
 
 verify () {
-	pkgapi_gpg --verify $NAME-$VERSION.tar.gz.sig || return 1
+	pkgapi_gpg --verify $TARNAME-$VERSION.tar.gz.sig || return 1
 }
 
 build () {
@@ -48,11 +49,12 @@ build () {
 	# Do the actual build
 	SED=sed \
 	../configure \
-		--prefix=/usr \
-		--libdir=/usr/lib${LIBDIRSUFFIX} \
-		--sysconfdir=/etc \
-		--localstatedir=/var \
-		--enable-languages=c,c++ \
+		--program-prefix=kernel_ \
+		--prefix=/opt/kernel_gcc \
+		--libdir=/opt/kernel_gcc/lib${LIBDIRSUFFIX} \
+		--sysconfdir=/opt/kernel_gcc/etc \
+		--localstatedir=/opt/kernel_gcc/var \
+		--enable-languages=c \
 		--disable-multilib \
 		--disable-bootstrap \
 		--with-system-zlib \
@@ -63,18 +65,6 @@ build () {
 	# Strip all of the binaries and libraries in $DESTDIR/ of their
 	# debugging symbols.
 	pkgapi_strip
-
-	# Create compatibility Symlinks
-	mkdir -pv $DESTDIR/lib
-	ln -sv ../usr/bin/cpp $DESTDIR/lib/cpp
-	ln -sv gcc $DESTDIR/usr/bin/cc
-	install -v -dm755 $DESTDIR/usr/lib/bfd-plugins
-	ln -sfv ../../libexec/gcc/$(gcc -dumpmachine)/5.3.0/liblto_plugin.so \
-		$DESTDIR/usr/lib/bfd-plugins/
-
-	# Move a mispalced file
-	mkdir -pv $DESTDIR/usr/share/gdb/auto-load/usr/lib
-	mv -v $DESTDIR/usr/lib${LIBDIRSUFFIX}/*gdb.py $DESTDIR/usr/share/gdb/auto-load/usr/lib
 
 	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
 	# $DESTDIR/install, creating $DESTDIR/install if need be.
