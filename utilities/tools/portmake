@@ -60,7 +60,7 @@ package in the current directory.
 
 Most Useful Actions:
 The following actions will likely be most useful to the average user.
-install-new	Install a package.
+install		Install a package.
 update		Update an individual package.
 update-all	Update the entire system.
 
@@ -167,7 +167,9 @@ portmake_build_recursive () {
 # script. Returns true (0) if the packate $1 is installed, otherwise returns
 # false (1).
 portmake_util_is_package_installed () {
-	if [ -z "$(ls /var/log/packages | egrep '^'$1'-[^-]+-[^-]+-[^-]+$')" ]; then
+	# Escape the package name for egrep
+	local escaped_name=$(sed 's/[^[:alnum:]]/\\&/g' <<< "$1")
+	if [ -z "$(ls /var/log/packages | egrep '^'"$escaped_name"'-[^-]+-[^-]+-[^-]+$')" ]; then
 		return 1
 	else
 		return 0
