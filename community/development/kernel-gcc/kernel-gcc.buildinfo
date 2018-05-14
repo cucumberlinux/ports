@@ -20,9 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# Cucumber Linux Buildinfo for gcc
+# Cucumber Linux Buildinfo for kernel-gcc
 
-NAME=kernel_gcc
+NAME=kernel-gcc
 TARNAME=gcc
 VERSION=7.3.0
 URL=(https://ftp.gnu.org/gnu/$TARNAME/$TARNAME-$VERSION/$TARNAME-$VERSION.tar.gz https://ftp.gnu.org/gnu/$TARNAME/$TARNAME-$VERSION/$TARNAME-$VERSION.tar.gz.sig)
@@ -49,11 +49,11 @@ build () {
 	# Do the actual build
 	SED=sed \
 	../configure \
-		--program-prefix=kernel_ \
-		--prefix=/opt/kernel_gcc \
-		--libdir=/opt/kernel_gcc/lib${LIBDIRSUFFIX} \
-		--sysconfdir=/opt/kernel_gcc/etc \
-		--localstatedir=/opt/kernel_gcc/var \
+		--program-prefix=kernel- \
+		--prefix=/opt/kernel-gcc \
+		--libdir=/opt/kernel-gcc/lib${LIBDIRSUFFIX} \
+		--sysconfdir=/opt/kernel-gcc/etc \
+		--localstatedir=/opt/kernel-gcc/var \
 		--enable-languages=c \
 		--disable-multilib \
 		--disable-bootstrap \
@@ -61,6 +61,10 @@ build () {
 		--build=$CUCARCH-cucumber-linux || exit 1
 	pkgapi_make || exit 1
 	make install DESTDIR=$DESTDIR || exit 1
+
+	# Make a gcc symlink so that this gcc takes precedence when
+	# /opt/kernel-gcc/bin is prepended to $PATH.
+	ln -s kernel-gcc $DESTDIR/opt/kernel-gcc/bin/gcc || exit 1
 
 	# Strip all of the binaries and libraries in $DESTDIR/ of their
 	# debugging symbols.
