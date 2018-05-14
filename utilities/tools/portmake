@@ -40,6 +40,12 @@ EXCLUDE_PACKAGE=()
 # build prefix matches this.
 BUILD_PREFIX=localport_
 
+# Include the config file. Do it after setting the variables so that
+# customizations made in the config file take precendence.
+if [ -f /etc/portmake.conf ]; then
+	source /etc/portmake.conf
+fi
+
 COLOR_FAIL="\033[1;31m"
 COLOR_WARN="\033[1;33m"
 COLOR_PASS="\033[1;32m"
