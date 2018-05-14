@@ -6,6 +6,9 @@ Contents:
   3. Keeping your system up to date with Portmake
      A. Updating an Individual Package
      B. Updating the Entire System
+  4. Additional Useful Information about Portmake
+     A. Obtaining Further Portmake Documentation
+     B. Customizing and Configuring Portmake
 
 §1. Building Packages Manually
 
@@ -60,11 +63,6 @@ were installed from source and which ones were installed from the official
 binaries (the official binaries will never use localport_ in their build
 numbers).
 
-Additionally, many portmake options (such as where it stores the binary
-packages and what text it inserts into the build number) can be customized by
-editing the file /etc/portmake.conf. A template portmake.conf can be found in
-ports/utilities/templates/portmake.conf.
-
 §3. Keeping your system up to date with Portmake
 
 Portmake also has the ability to automate updating packages. It is important to
@@ -92,4 +90,22 @@ Portmake can also update all of the packages that were originally installed
 using portmake in one fell swoop. To do this, run:
 
 `portmake update-all`
+
+§4. Additional Useful Information about Portmake
+
+§§A. Obtaining Further Portmake Documentation
+
+A full list of actions supported by portmake can be obtained by running:
+
+`portmake help`
+
+This help page also documents the exit codes for portmake and some influential
+environment variables.
+
+§§B. Customizing and Configuring Portmake
+
+Many portmake options (such as where it stores the binary packages and what
+text it inserts into the build number) can be customized by editing the file
+/etc/portmake.conf. A template portmake.conf can be found in
+ports/utilities/templates/portmake.conf.
 
