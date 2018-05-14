@@ -4,6 +4,9 @@ Welcome to the Cucumber Linxu Ports Tree 2.0. This ports tree has been completel
 ## IMPORTANT NOTE about Cloning this Repository
 Many of the utilities in this repository expect the repository to be located in /usr/ports, so it is strongly recommended that you either clone it into /usr or make a symlink from /usr/ports pointing to the location you cloned it to.
 
+## How to Build Packages
+Documentation on how to build the packages in this ports tree is located in the ports/utilities/documentation/building-packages file.
+
 ## Directory Structure
 The ports tree is broken down into three subdirectories: cucumber, community and utilities.
 
