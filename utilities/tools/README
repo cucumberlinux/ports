@@ -8,7 +8,7 @@ Generates a template buildinfo directory. This is useful when creating a
 buildinfo for a new package as it automates a good amount of the work. It will
 create a new directory in the current directory and place the buildinfo file
 (along with the other supporting files) in it. The resulting files will require
-some additional editing to work properly. Full documentation for
+some additional editing to work properly. Full documentation for the
 generate-cucumber-buildinfo-template tool and buildinfo files can be found in
 ports/utilities/documentation/cucumber-buildinfo.
 
