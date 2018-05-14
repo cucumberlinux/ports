@@ -17,5 +17,6 @@ Automates the process of building packages in the ports tree. It uses the
 buildscript driver to handle many of the tasks (such as downloading the source,
 verifying the integerity of the source, building the package and building
 dependencies). Information on using portmake can be obtained by running
-`portmake help`.
+`portmake help`. Documentation on how to build, install and update packages
+using portmake can be found in ports/utilities/documentation/portmake.
 
