@@ -153,8 +153,9 @@ The `verify` function is optional. If it does exist, it will be called during
 the signature/checksum verification process. It should perform any required to
 verify the integrity of any download sources beyond verifying the checksums in
 the files sha512sums, sha256sums, sha1sums, shasums and md5sums (these are
-handled automatically by the buildscript driver). This function should return 0
-if the verification was successful, or a non-zero value if it was not.
+handled automatically by the buildscript driver). This is the correct place to
+verify PGP signatures (see the pkgapi_gpg function). This function should
+return 0 if the verification was successful, or a non-zero value if it was not.
 
 §§B. Functions Defined by the Buildscript Driver
 
