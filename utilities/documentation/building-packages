@@ -39,7 +39,7 @@ the `portmake` script. The portmake utility uses a buildscript build and
 install a package from source automatically. Portmake is located at
 ports/utilities/tools/portmake and is used as follows: 
 
-`portmake <action> [package]`.
+`/path/to/portmake <action> [package]`.
 
 Portmake allows for several different actions, but the most useful one in this
 case is the install action, which performs steps 1 through 6 of section 1
@@ -53,7 +53,7 @@ directories.
 
 For example to build the iptables package, simply run: 
 
-`portmake install iptables`
+`/path/to/portmake install iptables`
 
 This will build the iptables package, install it and place the binary package
 in /opt/packages/cucumber/net-general/. Additionally, it will insert
@@ -74,7 +74,7 @@ or elsewhere, portmake will ignore it when checking for and performing updates.
 
 Portmake can update an individual package. To do this, run:
 
-`portmake update [package]`
+`/path/to/portmake update [package]`
 
 As before, if the package argument is omitted portmake will attempt to update
 the package in the current directory.
@@ -89,7 +89,7 @@ package.
 Portmake can also update all of the packages that were originally installed
 using portmake in one fell swoop. To do this, run:
 
-`portmake update-all`
+`/path/to/portmake update-all`
 
 §4. Additional Useful Information about Portmake
 
@@ -97,7 +97,7 @@ using portmake in one fell swoop. To do this, run:
 
 A full list of actions supported by portmake can be obtained by running:
 
-`portmake help`
+`/path/to/portmake help`
 
 This help page also documents the exit codes for portmake and some influential
 environment variables.
