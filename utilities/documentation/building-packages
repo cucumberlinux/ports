@@ -1,0 +1,95 @@
+                 Instructions for Building Packages from Source
+
+Contents:
+  1. Building Packages Manually
+  2. Building Packages Automatically with Portmake 
+  3. Keeping your system up to date with Portmake
+     A. Updating an Individual Package
+     B. Updating the Entire System
+
+§1. Building Packages Manually
+
+Packages can be built manually using their buildscripts. To build a package
+this way, follow these steps:
+  1. Navigate to its directory under the ports tree (the `find` utility may be
+     useful here). For example, to build the iptables package, cd to
+     ports/cucumber/net-general/iptables.
+  2. Run the .buildscript file in the package's directory with the `download`
+     argument. This will download all the necessary source files. Keeping with
+     the previous example, one would run `./iptables.buildscript download`.
+  3. Run the .buildscript file again, but this time with the `verify` argument.
+     This will verify the integrity of the download source code, ensuring that
+     it was not corrupted en transit or tampered with.
+  4. Run the .buildscript file a third and final time, this time with the
+     `build` argument. This will build the binary package from the sources
+     downloaded in step 2.
+  5. When the build is complete, the buildscript will print the path to the
+     newly built package. Install or update this package using the
+     `installpkg`/`upgradepkg` commands respectively.
+  6. By default, the binary packages are placed in /tmp so it may be desirable
+     to move them to a more permanent location.
+
+§2. Building Packages Automatically with Portmake 
+
+Alternatively, the process from section 1 can all be done automatically using
+the `portmake` script. The portmake utility uses a buildscript build and
+install a package from source automatically. Portmake is located at
+ports/utilities/tools/portmake and is used as follows: 
+
+`portmake <action> [package]`.
+
+Portmake allows for several different actions, but the most useful one in this
+case is the install action, which performs steps 1 through 6 of section 1
+automatically, placing the binary packages in /opt/packages.
+
+The package argument is optional. If it is not included, then portmake will
+assume that you have already cd'ed to the package's directory and will build
+the package in the current directory. If the argument is included, then
+portmake will automatically search for the package's directory and switch
+directories.
+
+For example to build the iptables package, simply run: 
+
+`portmake install iptables`
+
+This will build the iptables package, install it and place the binary package
+in /opt/packages/cucumber/net-general/. Additionally, it will insert
+'localport_' into the package's build number, indicating that it was built
+locally using portmake. This makes it easier to keep track of which packages
+were installed from source and which ones were installed from the official
+binaries (the official binaries will never use localport_ in their build
+numbers).
+
+Additionally, many portmake options (such as where it stores the binary
+packages and what text it inserts into the build number) can be customized by
+editing the file /etc/portmake.conf. A template portmake.conf can be found in
+ports/utilities/templates/portmake.conf.
+
+§3. Keeping your system up to date with Portmake
+
+Portmake also has the ability to automate updating packages. It is important to
+note that portmake will attempt to update only if the package was originally
+build using portmake; if the package was installed from the official binaries
+or elsewhere, portmake will ignore it when checking for and performing updates.
+
+§§A. Updating an Individual Package
+
+Portmake can update an individual package. To do this, run:
+
+`portmake update [package]`
+
+As before, if the package argument is omitted portmake will attempt to update
+the package in the current directory.
+
+Portmake will check if any of the files in the package's ports directory have
+been modified since the package was installed. If any files were modified, it
+will trigger an update to the package. If not, portmake will not update the
+package.
+
+§§B. Updating the Entire System
+
+Portmake can also update all of the packages that were originally installed
+using portmake in one fell swoop. To do this, run:
+
+`portmake update-all`
+
