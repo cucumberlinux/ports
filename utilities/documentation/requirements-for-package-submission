@@ -17,5 +17,5 @@ one of them is not met, it is grounds for having the submission rejected:
     are not adequate on their own; if you use one of these checksums, then you
     must have at least one other verification method in place as well.
 5.  pkgapi functions must be used whenever possible (for .buildinfo files only).
-6.  The package must build correctly.
+6.  The package must build correctly on a clean installation.
 
