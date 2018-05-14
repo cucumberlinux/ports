@@ -6,3 +6,9 @@
 
 # Binary package archives
 *.t?z
+
+# Signatures - these should be on the download list and downloaded when the
+# 'download' function is run.
+*.asc
+*.sig
+
