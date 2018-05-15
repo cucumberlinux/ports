@@ -1,0 +1,77 @@
+#!/bin/bash
+
+# Copyright 2016 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for bzip2
+
+NAME=bzip2
+VERSION=1.0.6
+URL=(http://www.bzip.org/$VERSION/$NAME-$VERSION.tar.gz)
+BUILDDEPS=()
+
+build () {
+
+	tar -xf "$OWD/$NAME-$VERSION.tar.gz" || exit 1
+	cd $NAME-$VERSION || exit 1
+
+	# Apply a patch that will install the documentation for this package
+	patch -Np1 -i $OWD/bzip2-1.0.6-install_docs-1.patch
+
+	# If we are on x86_64, run a sed command that changes the libdir to lib64
+	if [ "$CUCARCH" = "x86_64" ]; then
+		sed -i 's@/lib\(/\| \|$\)@/lib64\1@g' Makefile
+	fi
+
+	# The following command ensures installation of symbolic links are relative:
+	sed -i 's@\(ln -s -f \)$(PREFIX)/bin/@\1@' Makefile
+
+	# Ensure the man pages are installed into the correct location:
+	sed -i "s@(PREFIX)/man@(PREFIX)/share/man@g" Makefile
+
+	# Apply any patches located in $OWD/patches
+	pkgapi_apply_patches || exit 1
+
+	# Do the actual build
+	make -f Makefile-libbz2_so || exit 1
+	make clean || exit 1
+	make || exit 1
+	mkdir -pv $DESTDIR/usr
+	make install PREFIX=$DESTDIR/usr || exit 1
+
+	# Strip all of the binaries and libraries in $DESTDIR/ of their
+	# debugging symbols.
+	pkgapi_strip
+
+	# Install the shared bzip2 binary into the /bin directory, make some necessary symbolic links, and clean up
+	mkdir -pv $DESTDIR/{bin,lib${LIBDIRSUFFIX}}
+	cp -v bzip2-shared $DESTDIR/bin/bzip2
+	cp -av libbz2.so* $DESTDIR/lib${LIBDIRSUFFIX}
+	ln -sv ../../lib${LIBDIRSUFFIX}/libbz2.so.1.0 $DESTDIR/usr/lib${LIBDIRSUFFIX}/libbz2.so
+	rm -v $DESTDIR/usr/bin/{bunzip2,bzcat,bzip2}
+	ln -sv bzip2 $DESTDIR/bin/bunzip2
+	ln -sv bzip2 $DESTDIR/bin/bzcat
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+}
+
