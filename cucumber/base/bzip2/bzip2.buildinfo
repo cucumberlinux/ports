@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2016 Scott Court
+# Copyright 2016, 2018 Scott Court
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -52,7 +52,7 @@ build () {
 	# Do the actual build
 	make -f Makefile-libbz2_so || exit 1
 	make clean || exit 1
-	make || exit 1
+	pkgapi_make || exit 1
 	mkdir -pv $DESTDIR/usr
 	make install PREFIX=$DESTDIR/usr || exit 1
 
