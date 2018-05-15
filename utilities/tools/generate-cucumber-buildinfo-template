@@ -55,7 +55,7 @@ echo Enter the version of the package:
 read VERSION
 sed -i ./$NAME/${NAME}.buildinfo -e "s|insert_package_version|$VERSION|g"
 
-# Set version
+# Set URL
 cat << EOF
  Enter the URL to download the source tarball from. In the case of multiple URLs, enter them as a space separated list. Please use the following variables when possible:
 \$NAME          The name of the package (i.e. python3)
@@ -66,7 +66,7 @@ EOF
 read URL
 sed -i ./$NAME/${NAME}.buildinfo -e "s|insert_package_url|$URL|g"
 
-# Set pkg_version
+# Set BUILDDEPS
 echo Enter any build time dependencies for $NAME as a space separated list. glibc, gcc and binutils are implicit and do not need to be entered. If there are no build time dependencies, leave this blank and press enter.
 read BUILDDEPS
 sed -i ./$NAME/${NAME}.buildinfo -e "s|insert_package_dependencies|$BUILDDEPS|g"

@@ -3,6 +3,11 @@
 This directory contains a bunch of tools for working with the ports system.
 Here is a brief description of what each one does:
 
+§ convert-buildscript-to-buildinfo
+Converts a Cucumber Linux 1.x formatted buildscript to a Cucumber Linux 2.x
+formatted buildinfo. It attempts to do as much as possible automatically;
+however, it still requires manual intervention.
+
 § generate-cucumber-buildinfo-template
 Generates a template buildinfo directory. This is useful when creating a
 buildinfo for a new package as it automates a good amount of the work. It will

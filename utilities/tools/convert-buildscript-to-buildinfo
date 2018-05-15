@@ -1,0 +1,192 @@
+#!/bin/bash
+
+# Copyright 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+cat_indented () {
+	cat $@ | sed 's/^/	/' | sed 's/^	$//'
+}
+
+if [ $# -ne 1 ]; then
+	cat << EOF
+This script converts a Cucumber 1.x formatted .buildscript file to a Cucumber
+2.x formatted .buildinfo file.
+
+Usage: $0 <foo.buildscript>
+EOF
+	exit 1
+fi
+
+pkg_name=$(basename $1 | rev | cut -d . -f 2- | rev)
+buildscript=$(basename $1)
+buildinfo=${pkg_name}.buildinfo
+OWD=$(realpath $(dirname $1))
+CWD=/tmp/convert-buildscript-to-buildinfo/$pkg_name
+BASEDIR=$(dirname $0)
+
+cd "$OWD"
+
+if [ -e "$buildinfo" ]; then
+	echo "Error: $buildinfo already exists. Remove it first if you would still like to convert ${buildscript}."
+	exit 1
+fi
+
+echo Converting $buildscript to $buildinfo
+
+# Make a temporary directory so we don't make a mess in $OWD
+if [ -d "$CWD" ]; then
+	rm -rf "$CWD" || exit 1
+fi
+mkdir -p "$CWD" || exit 1
+cd "$CWD" || exit 1
+
+# Split the file by paragraph
+hunks=$(csplit "$OWD/$buildscript" '/^$/' '{*}' -n 1 | wc | awk '{ print $1 }')
+echo Found $hunks paragraphs
+
+# First pass - get some key hunk numbers
+hunk_highest=$(expr $hunks - 1)
+for i in $(seq 0 $hunk_highest); do
+	first_line=$(tail -n+2 xx$i | head -n1)
+	case $first_line in
+		tar*)	hunk_start=$i ;;
+		"# Compress the package")	hunk_end=$(expr $i - 1) ;;
+	esac
+done
+
+# Load some variables from the original buildscript
+cd "$OWD"
+source "$CWD/xx3"
+cd "$CWD"
+
+echo NAME: $NAME
+echo VERSION: $VERSION
+
+# Set URL
+cat << EOF
+ Enter the URL to download the source tarball from. In the case of multiple URLs, enter them as a space separated list. Please use the following variables when possible:
+\$NAME          The name of the package (i.e. python3)
+\$VERSION       The version of the package to build (i.e. 3.6.5)
+\$TARNAME       The name of the package as it appears in the source tarball
+		(i.e. Python).
+EOF
+read URL
+
+# Set BUILDDEPS
+echo Enter any build time dependencies for $NAME as a space separated list. glibc, gcc and binutils are implicit and do not need to be entered. If there are no build time dependencies, leave this blank and press enter.
+read BUILDDEPS
+
+echo Converting...
+
+# Print comment header
+cat xx{0..1} > $OWD/$buildinfo
+echo >> $OWD/$buildinfo
+echo "# Cucumber Linux Buildinfo for $pkg_name" >> $OWD/$buildinfo
+
+# Print variables
+echo >> $OWD/$buildinfo
+echo NAME=$NAME >> $OWD/$buildinfo
+if [ ! -z "$TARNAME" ]; then
+	echo TARNAME=$TARNAME >> $OWD/$buildinfo
+fi
+echo VERSION=$VERSION >> $OWD/$buildinfo
+echo URL=\($URL\) >> $OWD/$buildinfo
+echo BUILDDEPS=\($BUILDDEPS\) >> $OWD/$buildinfo
+
+# Print build function opening
+echo >> $OWD/$buildinfo
+echo "build () {" >> $OWD/$buildinfo
+
+# Print build function contents
+for i in $(seq $hunk_start $hunk_end); do
+	first_line=$(tail -n+2 xx$i | head -n1)
+	case $first_line in
+		"# Apply any patches")
+			seen_apply_patches=true
+			echo >> $OWD/$buildinfo
+			echo -e "\t# Apply any patches located in \$OWD/patches" >> $OWD/$buildinfo
+			echo -e "\tpkgapi_apply_patches || exit 1" >> $OWD/$buildinfo 
+			;;
+		"# Do the actual build")
+			if [ "$seen_apply_patches" != "true" ]; then
+				echo >> $OWD/$buildinfo
+				echo -e "\t# Apply any patches located in \$OWD/patches" >> $OWD/$buildinfo
+				echo -e "\tpkgapi_apply_patches || exit 1" >> $OWD/$buildinfo 
+			fi
+			cat_indented $CWD/xx$i >> $OWD/$buildinfo
+			;;
+		"# Strip")
+			echo >> $OWD/$buildinfo
+			echo -e "\t# Strip all of the binaries and libraries in \$DESTDIR/ of their" >> $OWD/$buildinfo
+			echo -e "\t# debugging symbols." >> $OWD/$buildinfo
+			echo -e "\tpkgapi_strip" >> $OWD/$buildinfo 
+			;;
+		"# Copy any additional package scripts")
+			echo >> $OWD/$buildinfo
+			echo -e "\t# Copies ths install scripts (slack-desc and doint.sh) from \$OWD to" >> $OWD/$buildinfo
+			echo -e "\t# \$DESTDIR/install, creating \$DESTDIR/install if need be." >> $OWD/$buildinfo
+			echo -e "\tpkgapi_copy_package_scripts" >> $OWD/$buildinfo 
+			;;
+		*) 
+			cat_indented $CWD/xx$i >> $OWD/$buildinfo
+			;;
+	esac
+	
+done
+
+# Print build function closing
+echo >> $OWD/$buildinfo
+echo "}" >> $OWD/$buildinfo
+echo >> $OWD/$buildinfo
+
+# Move the original .buildscript to the .orig suffix and symlink the new
+# buildscript driver into $OWD
+mv $OWD/$buildscript{,.orig}
+ln -s $(realpath "$BASEDIR/../templates/cucumber-buildinfo/template.buildscript" --relative-to "$OWD") "$OWD/$buildscript"
+
+
+# Calculate checksums
+cd "$OWD"
+if [ -e sha512sums ]; then
+	mv sha512sums{,.old}
+fi
+sha512sum *.tar.?z* > sha512sums
+sha512sum *.t?z* >> sha512sums
+
+# Print a disclaimer
+cat << EOF
+
+$buildscript has been converted to $buildinfo
+YOU'RE NOT DONE YET!
+
+$buildinfo will require additional editing. Here are some things that were not
+done by this script that you must do manually:
+* Update the copyright line to include your name and the current year.
+* Change the '#Do the actual build' section to use pkgapi_make instead of make.
+  Note that only the main make command should use pkgapi_make; the other make
+  commands (like make install) should still use plain make.
+* If 'cat << EOF' is used anywhere in the buildscript, it will be necessary to
+  unindent those lines.
+* Verify that the checksums in sha512sums are correct and cover all of the
+  necessary files.
+* Add signature verification (if desired; this is not strictly required but it
+  makes updating the package substantially easier).
+EOF
+
