@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for gcc
 
 NAME=gcc
-VERSION=5.3.0
+VERSION=7.3.0
 URL=(https://ftp.gnu.org/gnu/$NAME/$NAME-$VERSION/$NAME-$VERSION.tar.gz https://ftp.gnu.org/gnu/$NAME/$NAME-$VERSION/$NAME-$VERSION.tar.gz.sig)
 BUILDDEPS=(gmp mpfr mpc)
 
