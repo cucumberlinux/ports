@@ -25,7 +25,7 @@
 NAME=gcc
 VERSION=7.3.0
 URL=(https://ftp.gnu.org/gnu/$NAME/$NAME-$VERSION/$NAME-$VERSION.tar.gz https://ftp.gnu.org/gnu/$NAME/$NAME-$VERSION/$NAME-$VERSION.tar.gz.sig)
-BUILDDEPS=(gmp mpfr mpc)
+BUILDDEPS=()
 
 verify () {
 	pkgapi_gpg --verify $NAME-$VERSION.tar.gz.sig || return 1

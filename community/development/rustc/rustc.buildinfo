@@ -25,7 +25,7 @@
 NAME=rustc
 VERSION=1.26.0
 URL=(https://static.rust-lang.org/dist/$NAME-$VERSION-src.tar.gz)
-BUILDDEPS=(curl cmake python3)
+BUILDDEPS=(cmake python3)
 
 build () {
 
