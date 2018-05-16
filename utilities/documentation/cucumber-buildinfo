@@ -61,35 +61,10 @@ URL		An array of the upstream URLs to download the package sources
 		much as possible in the URL and hardcode as little as possible.
 BUILDDEPS	An array of build time dependencies for the package. The package
 		names in this array should appear exactly as they do in the
-		ports tree. The following packages are implicit build
-		dependencies and do not need to be listed:
-			linux
-			glibc
-			binutils
-			gcc
-			m4
-			ncurses
-			bash
-			bison
-			bzip2
-			coreutils
-			diffutils
-			file
-			findutils
-			gawk
-			gettext
-			grep
-			gzip
-			make
-			patch
-			perl
-			pkgtools
-			sed
-			tar
-			texinfo
-			util-linux
-			which
-			xz
+		ports tree. Packages that are included in phase 2 of the build
+		process are considered implicit dependencies and need not be
+		listed. A list of phase 2 packages can be found in
+		ports/utilities/documentation/phase2-packages.
 
 The following variable can optionally be defined:
 
