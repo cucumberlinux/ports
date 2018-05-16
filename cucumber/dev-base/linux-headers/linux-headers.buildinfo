@@ -24,7 +24,7 @@
 
 NAME=linux-headers
 VERSION=4.16.8
-URL=(https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.16.8.tar.xz)
+URL=(https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-$VERSION.tar.xz)
 BUILDDEPS=()
 
 build () {
