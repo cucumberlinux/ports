@@ -1,0 +1,107 @@
+#!/bin/bash
+
+# Copyright 2016, 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for ncurses
+
+NAME=ncurses
+VERSION=6.1
+URL=(https://ftp.gnu.org/gnu//$NAME/$NAME-$VERSION.tar.gz)
+BUILDDEPS=()
+
+build () {
+
+	tar -xf "$OWD/$NAME-$VERSION.tar.gz" || exit 1
+	cd $NAME-$VERSION || exit 1
+
+	# Apply any patches located in $OWD/patches
+	pkgapi_apply_patches || exit 1
+
+	# Don't install a static library that is not handled by configure:
+	sed -i '/LIBTOOL_INSTALL/d' c++/Makefile.in
+
+	# Do the actual build without wide character support
+	./configure \
+		--prefix=/usr \
+		--libdir=/usr/lib${LIBDIRSUFFIX} \
+		--sysconfdir=/etc \
+		--localstatedir=/var \
+		--mandir=/usr/share/man \
+		--with-shared \
+		--without-debug \
+		--without-normal \
+		--enable-pc-files \
+		--build=$CUCARCH-cucumber-linux || exit 1
+	pkgapi_make || exit 1
+	make install DESTDIR=$DESTDIR || exit 1
+
+	# Do the actual build again, thie time with wide character support
+	make clean
+	./configure \
+		--prefix=/usr \
+		--libdir=/usr/lib${LIBDIRSUFFIX} \
+		--sysconfdir=/etc \
+		--localstatedir=/var \
+		--mandir=/usr/share/man \
+		--with-shared \
+		--without-debug \
+		--without-normal \
+		--enable-pc-files \
+		--enable-widec \
+		--build=$CUCARCH-cucumber-linux || exit 1
+	pkgapi_make || exit 1
+	make install DESTDIR=$DESTDIR || exit 1
+
+	# Move the libraries to /lib where they are expected to reside
+	mkdir $DESTDIR/lib${LIBDIRSUFFIX}
+	mv -v $DESTDIR/usr/lib${LIBDIRSUFFIX}/libncurses.so.6* $DESTDIR/lib${LIBDIRSUFFIX}
+	mv -v $DESTDIR/usr/lib${LIBDIRSUFFIX}/libncursesw.so.6* $DESTDIR/lib${LIBDIRSUFFIX}
+
+	# Now create symlinks to satisfy packages that look under /usr/lib
+	# Apparantly the LFS devs want the libaries in /lib and symlinks in
+	# /usr/lib. Quite frankly, it seems like it would be a whole lot
+	# simpler to leave the libraries where they are and symlink them to
+	# /lib, but hey, maybe the there's a reason the the LFS devs did it
+	# this way that I'm unaware of, so we will just follow suit in Cucumber
+	# Linux.
+	ln -sfv ../../lib${LIBDIRSUFFIX}/$(readlink $DESTDIR/usr/lib${LIBDIRSUFFIX}/libncursesw.so) $DESTDIR/usr/lib${LIBDIRSUFFIX}/libncursesw.so
+	ln -sfv ../../lib${LIBDIRSUFFIX}/$(readlink $DESTDIR/usr/lib${LIBDIRSUFFIX}/libncurses.so) $DESTDIR/usr/lib${LIBDIRSUFFIX}/libncurses.so
+
+	# Finally, make sure that old applications that look for -lcurses at
+	# build time are still buildable:
+	rm -vf                     $DESTDIR/usr/lib${LIBDIRSUFFIX}/libcursesw.so
+	echo "INPUT(-lncursesw)" > $DESTDIR/usr/lib${LIBDIRSUFFIX}/libcursesw.so
+	ln -sfv libncurses.so      $DESTDIR/usr/lib${LIBDIRSUFFIX}/libcurses.so
+
+	# Install the documentation
+	mkdir -v       /usr/share/doc/ncurses-6.0
+	cp -v -R doc/* /usr/share/doc/ncurses-6.0
+
+	# Strip all of the binaries and libraries in $DESTDIR/ of their
+	# debugging symbols.
+	pkgapi_strip
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+}
+
