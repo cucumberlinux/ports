@@ -10,7 +10,7 @@ one of them is not met, it is grounds for having the submission rejected:
 2.  All download links must be listed the URL variable (or equivatlent). And
     must use variables sufficiently.
 3.  All build dependencies (except for the packages that are included in 
-    stage 0) must be listed.
+    phase 2) must be listed.
 4.  There must be some sort of source integreity verification in place. The
     following verification methods are considered adequate on their own: PGP
     signatures, SHA512 checksums and SHA256 checksums. SHA1 and MD5 checksums
