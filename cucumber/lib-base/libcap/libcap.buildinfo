@@ -1,0 +1,72 @@
+#!/bin/bash
+
+# Copyright 2016, 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for libcap
+
+NAME=libcap
+VERSION=2.25
+URL=(https://mirrors.edge.kernel.org/pub/linux/libs/security/linux-privs/libcap2/$NAME-$VERSION.tar.xz)
+BUILDDEPS=()
+
+build () {
+
+	tar -xf "$OWD/$NAME-$VERSION.tar.xz" || exit 1
+	cd $NAME-$VERSION || exit 1
+
+	# Prevent a static library from being installed:
+	sed -i '/install.*STALIBNAME/d' libcap/Makefile
+
+	# If the workaround /tools/bin/which exists, it must be disabled for
+	# this build (or it will fail miserably)
+	if [ -x /tools/bin/which ]; then
+		mv /tools/bin/which /tools/bin/_which
+	fi
+
+	# Apply any patches located in $OWD/patches
+	pkgapi_apply_patches || exit 1
+
+	# Do the actual build
+	pkgapi_make || exit 1
+	make install RAISE_SETFCAP=no prefix=$DESTDIR/usr || exit 1
+	chmod -v 755 $DESTDIR/usr/lib/libcap.so
+
+	# The shared library needs to be moved to /lib, and as a result the .so
+	# file in /usr/lib will need to be recreated: 
+	mkdir -pv $DESTDIR/lib${LIBDIRSUFFIX}
+	mv -v $DESTDIR/usr/lib${LIBDIRSUFFIX}/libcap.so.* $DESTDIR/lib${LIBDIRSUFFIX}
+	ln -sfv ../../lib${LIBDIRSUFFIX}/$(readlink $DESTDIR/usr/lib${LIBDIRSUFFIX}/libcap.so) $DESTDIR/usr/lib${LIBDIRSUFFIX}/libcap.so
+
+	# Strip all of the binaries and libraries in $DESTDIR/ of their
+	# debugging symbols.
+	pkgapi_strip
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+	# Reenable which if we disabled it, so makepkg works
+	if [ -x /tools/bin/_which ]; then
+		mv /tools/bin/_which /tools/bin/which
+	fi
+
+}
+
