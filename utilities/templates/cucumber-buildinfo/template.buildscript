@@ -28,9 +28,11 @@
 ################################################################################
 
 # Driver Version
-DRV_VERSION=0.0.4
+DRV_VERSION=0.0.5
 
 # Changelog
+# 0.0.5   Enabled following redirects when downloading the source (added the -L
+#         flag to curl).
 # 0.0.4   Added pkgapi_gpg function
 
 ######################## Cucumber Linux Buildscript API ########################
@@ -116,7 +118,7 @@ drv_download () {
 			echo $(basename $url) already exists. Skipping. Delete it if you would like to redownload it.
 		else
 			echo Downloading $url
-			curl -# -O $url || exit 1
+			curl -L -# -O $url || exit 1
 		fi
 	done
 	popd
