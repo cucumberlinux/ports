@@ -1,0 +1,91 @@
+#!/bin/bash
+
+# Copyright 2016, 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for shadow
+
+NAME=shadow
+VERSION=4.6
+URL=(https://github.com/shadow-maint/shadow/releases/download/$VERSION/$NAME-$VERSION.tar.xz)
+BUILDDEPS=()
+
+build () {
+
+	tar -xf "$OWD/$NAME-$VERSION.tar.xz" || exit 1
+	cd $NAME-$VERSION || exit 1
+
+	# Disable the installation of the groups program and its man pages, as
+	# Coreutils provides a better version. Also Prevent the installation of
+	# manual pages that were already installed by the man pages package:
+	sed -i 's/groups$(EXEEXT) //' src/Makefile.in
+	find man -name Makefile.in -exec sed -i 's/groups\.1 / /'   {} \;
+	find man -name Makefile.in -exec sed -i 's/getspnam\.3 / /' {} \;
+	find man -name Makefile.in -exec sed -i 's/passwd\.5 / /'   {} \;
+
+	# Instead of using the default crypt method, use the more secure
+	# SHA-512 method of password encryption, which also allows passwords
+	# longer than 8 characters. It is also necessary to change the obsolete
+	# /var/spool/mail location for user mailboxes that Shadow uses by
+	# default to the /var/mail location used currently:
+	sed -i -e 's@#ENCRYPT_METHOD DES@ENCRYPT_METHOD SHA512@' \
+		       -e 's@/var/spool/mail@/var/mail@' etc/login.defs
+
+	# Make a minor change to make the default useradd consistent with the
+	# LFS groups file:
+	sed -i 's/1000/999/' etc/useradd
+
+	# Apply any patches located in $OWD/patches
+	pkgapi_apply_patches || exit 1
+
+	# Do the actual build
+	./configure \
+		--prefix=/usr \
+		--libdir=/usr/lib${LIBDIRSUFFIX} \
+		--sysconfdir=/etc \
+		--localstatedir=/var \
+		--with-group-name-max-length=32 \
+		--build=$CUCARCH-cucumber-linux || exit 1
+	pkgapi_make || exit 1
+	make install DESTDIR=$DESTDIR || exit 1
+
+	# Move a misplaced program to its proper location:
+	mv -v $DESTDIR/usr/bin/passwd $DESTDIR/bin
+
+	# Strip all of the binaries and libraries in $DESTDIR/ of their
+	# debugging symbols.
+	pkgapi_strip
+
+	# Move some configuration files to .new so they are not clobbered on a
+	# package update
+	for file in etc/login.defs etc/default/useradd etc/login.access etc/limits; do
+		mv -v $DESTDIR/$file $DESTDIR/${file}.new || exit 1
+	done
+
+	# Install the adduser script
+	mkdir -pv $DESTDIR/usr/sbin
+	install -m 755 $OWD/adduser $DESTDIR/usr/sbin/
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+}
+
