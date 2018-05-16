@@ -1,0 +1,50 @@
+#!/bin/bash
+
+# Copyright 2016 Scott Court
+# Copyright 2018 Maarten Hendrickx
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for linux-headers
+
+NAME=linux-headers
+VERSION=4.16.8
+URL=(https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-$VERSION.tar.xz)
+BUILDDEPS=()
+
+build () {
+
+	tar -xf "$OWD/linux-$VERSION.tar.xz" || exit 1
+	cd linux-$VERSION || exit 1
+
+	# Apply any patches located in $OWD/patches
+	pkgapi_apply_patches || exit 1
+
+	# Do the actual build
+	make mrproper || exit 1
+	make INSTALL_HDR_PATH=dest headers_install || exit 1
+	find dest/include \( -name .install -o -name ..install.cmd \) -delete || exit 1
+	mkdir -pv $BUILDDIR/bin/usr/include
+	cp -rv dest/include/* $BUILDDIR/bin/usr/include || exit 1
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+}
