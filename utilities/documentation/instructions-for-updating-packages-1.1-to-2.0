@@ -1,0 +1,81 @@
+       Instructions for Updating Packages from Cucumber Linux 1.1 to 2.0
+
+Contents:
+     Introduction
+  1. Convert the 1.x Formatted Buildscript to a Buildinfo
+  2. Update the Package to the New Version
+  3. Submitting the Updated Package Source Directory
+
+§ Introduction
+
+To update a package for Cucumber Linux 2.0, there are two tasks that must be
+done. These are detailed below:
+
+  1. Convert the 1.x formatted buildscript to a buildinfo.
+  2. Update the package to the new version.
+
+It is often easier to do both steps 1 and 2 in one sitting. If they are done at
+the same time, there is certain redundant work that can be eliminated.
+
+§1. Convert the 1.x Formatted Buildscript to a Buildinfo
+
+Start by importing the source from the Cucumber Linux 1.1 tree
+(https://mirror.cucumberlinux.com/cucumber/cucumber-1.1/source/) into the ports
+tree. When doing this, the package's directory should go in
+ports/cucumber/<group>, where <group> is the package group it was in for
+Cucumber Linux 1.1.
+
+All of the Cucumber Linux 1.1 buildscripts need to be converted. To aid in this
+process, there is a script at
+ports/utilities/tools/convert-buildscript-to-buildinfo. Run this script, passing
+the buildscript you wish to convert in as an argument. The script is self
+guided.
+
+Once the script has run, YOU ARE NOT DONE YET. At the end of the script, it
+will state several additional things that need to be done:
+* Update the copyright line to include your name and the current year.
+* Change the '#Do the actual build' section to use pkgapi_make instead of make.
+  Note that only the main make command should use pkgapi_make; the other make
+  commands (like make install) should still use plain make.
+* If 'cat << EOF' is used anywhere in the buildscript, it will be necessary to
+  unindent those lines.
+* Verify that the checksums in sha512sums are correct and cover all of the
+  necessary files.
+* Add signature verification (if desired; this is not strictly required but it
+  makes updating the package substantially easier). An example of how to do this
+  can be found in the gcc package.
+
+Finally, make sure the buildinfo file meets all of the requirements listed in
+ports/utilities/documentation/requirements-for-package-submission.
+
+Now the conversion is complete.
+
+§2. Update the Package to the New Version
+
+Please update the packages to the version listed at
+https://mirror.cucumberlinux.com/sandbox/cucumber-2.0/Cucumber-Linux-2.0-Package-Versions.html if the packages is listed on the webpage. If the package is not
+listed on that webpage, then update the whatever the latest stable version is.
+If you think there is a good reason to make an exception to these guidelines
+for a package, talk to Scott about it.
+
+When updating packages to the new version, all that should be necessary is the
+following:
+
+  1. Change the VERSION variable in the buildinfo file to the new version.
+  2. Update the checksums.
+
+Then verify that the new version builds correctly. One easy way to do this is to
+run:
+
+	portmake download && sudo portmake build-recursive
+
+If that results in a package tarball being made, then the update was likely
+successful.
+
+§3. Submitting the Updated Package Source Directory
+
+Before submitting an updated package, make sure it meets all the requirements
+from ports/utilities/documentation/requirements-for-package-submission.
+
+Then, submit a pull request on GitHub (https://github.com/cucumberlinux/ports).
+

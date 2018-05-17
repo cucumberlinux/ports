@@ -187,6 +187,7 @@ done by this script that you must do manually:
 * Verify that the checksums in sha512sums are correct and cover all of the
   necessary files.
 * Add signature verification (if desired; this is not strictly required but it
-  makes updating the package substantially easier).
+  makes updating the package substantially easier). An example of how to do this
+  can be found in the gcc package.
 EOF
 
