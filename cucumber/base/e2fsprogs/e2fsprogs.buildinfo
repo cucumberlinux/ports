@@ -1,0 +1,110 @@
+#!/bin/bash
+
+# Copyright 2016, 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for e2fsprogs
+
+NAME=e2fsprogs
+VERSION=1.44.2
+URL=(https://mirrors.edge.kernel.org/pub/linux/kernel/people/tytso/e2fsprogs/v$VERSION/$NAME-$VERSION.tar.{gz,sign})
+BUILDDEPS=()
+
+verify () {
+	local ret=0
+
+	gzip -fdk $NAME-$VERSION.tar.gz || ret=1
+	pkgapi_gpg --verify $NAME-$VERSION.tar.sign || ret=1
+	rm $NAME-$VERSION.tar || return 1
+	return $ret
+}
+
+build () {
+
+	tar -xf "$OWD/$NAME-$VERSION.tar.gz" || exit 1
+	cd $NAME-$VERSION || exit 1
+
+	# The E2fsprogs documentation recommends that the package be built in a
+	# subdirectory of the source tree:
+	mkdir -v build
+	cd build
+
+	# If we are compiling from the lfs base, these variables enable
+	# e2fsprogs to be built using the Section 5.33, "Util-linux-2.27.1"
+	# package built earlier.
+	if [ -e /tools ]; then
+		export LIBS="-L/tools/lib"
+		export CFLAGS="-I/tools/include"
+		export PKG_CONFIG_PATH="/tools/lib/pkgconfig"
+	fi
+
+	echo LIBS=$LIBS
+	echo CFLAGS=$CFLAGS
+	echo PKG_CONFIG_PATH=$PKG_CONFIG_PATH
+
+	# Apply any patches located in $OWD/patches
+	pkgapi_apply_patches || exit 1
+
+	# Do the actual build
+	../configure \
+		--prefix=/usr \
+		--libdir=/usr/lib${LIBDIRSUFFIX} \
+		--sysconfdir=/etc \
+		--localstatedir=/var \
+		--bindir=/bin \
+		--with-root-prefix="" \
+		--enable-elf-shlibs \
+		--disable-libblkid \
+		--disable-libuuid \
+		--disable-uuidd \
+		--disable-fsck \
+		--build=$CUCARCH-cucumber-linux || exit 1
+	# If we set the variables to point to /tools, unset them before running
+	# make
+	if [ -e /tools ]; then
+		unset LIBS
+		unset CFLAGS
+		unset PKG_CONFIG_PATH
+	fi
+	pkgapi_make || exit 1
+	make install DESTDIR=$DESTDIR || exit 1
+	make install-libs DESTDIR=$DESTDIR || exit 1
+
+	# This package installs a gzipped .info file but doesn't update the
+	# system-wide dir file. Unzip this file and then update the system dir
+	# file using the following commands.
+	gunzip -v $DESTDIR/usr/share/info/libext2fs.info.gz
+	install-info --dir-file=$DESTDIR/usr/share/info/dir $DESTDIR/usr/share/info/libext2fs.info
+
+	# Create additional documentation (the more the better!)
+	makeinfo -o      doc/com_err.info ../lib/et/com_err.texinfo
+	install -v -m644 doc/com_err.info $DESTDIR/usr/share/info
+	install-info --dir-file=$DESTDIR/usr/share/info/dir $DESTDIR/usr/share/info/com_err.info
+
+	# Strip all of the binaries and libraries in $DESTDIR/ of their
+	# debugging symbols.
+	pkgapi_strip
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+}
+
