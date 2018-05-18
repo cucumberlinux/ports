@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+        |-----handy-ruler------------------------------------------------------|
+iana-etc: The Iana-Etc package provides data for network services and 
+iana-etc: protocols. It does this by converting the raw data provided by IANA 
+iana-etc: into the correct formats for the /etc/protocols and /etc/services 
+iana-etc: data files.
+iana-etc:
+iana-etc:
+iana-etc:
+iana-etc:
+iana-etc:
+iana-etc:
+iana-etc:
