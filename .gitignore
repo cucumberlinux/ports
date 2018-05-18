@@ -11,4 +11,5 @@
 # 'download' function is run.
 *.asc
 *.sig
+*.sign
 
