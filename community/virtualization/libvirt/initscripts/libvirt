@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 # Init script for libvirtd on Slackware
 # Written by Matteo Bernardini <ponce@slackbuilds.org>
 #

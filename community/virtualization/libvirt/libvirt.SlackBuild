@@ -72,7 +72,7 @@ CFLAGS="$SLKCFLAGS" \
   --with-qemu-group=$VIRTGROUP \
   --with-init-script=none
 
-make \
+pkgapi_make \
   HTML_DIR=/usr/share/doc/$PRGNAM-$VERSION \
   EXAMPLE_DIR=/usr/share/doc/$PRGNAM-$VERSION/examples
 make \
