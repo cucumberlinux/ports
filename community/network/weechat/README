@@ -1,0 +1,18 @@
+weechat (IRC client)
+
+WeeChat is a light & fast multilingual curses-based multiplatform IRC client.
+
+WeeChat supports:
+    DCC files and chats, multi-server connections, background connections,
+    IPv6, SSL, proxy, auto-reconnection, DCC2, nicklist, window splitting,
+    FIFO pipe for remote control, Aspell, JavaScript, Perl, Python, Ruby,
+    nick auto-completion, lag indication, auto-logging and client upgrades
+    without dropping connections.
+
+WeeChat will build with support for:
+    Aspell, JavaScript scripting, Perl scripting, Python scripting,
+    Ruby scripting, Lua scripting, Guile scripting, and GnuTLS depending
+    on whether or not they are installed on the system on which WeeChat
+    is built.
+
+WeeChat man pages will be built if rubygem-asciidoctor is installed.
