@@ -8,6 +8,16 @@ Converts a Cucumber Linux 1.x formatted buildscript to a Cucumber Linux 2.x
 formatted buildinfo. It attempts to do as much as possible automatically;
 however, it still requires manual intervention.
 
+§ convert-slackbuildsdotorg-slackbuild
+This script converts a slackbuilds.org formatted .SlackBuild file to a format
+suitable for use in the Cucumber Linux ports system. To use this script, do the
+following:
+1. Download the SlackBuild tarball from slackbuilds.org.
+2. Extract the tarball.
+3. Run the following command:
+	`ports/utilities/tools/convert-slackbuildsdotorg-slackbuild \
+	/path/to/foo.SlackBuild`
+
 § generate-cucumber-buildinfo-template
 Generates a template buildinfo directory. This is useful when creating a
 buildinfo for a new package as it automates a good amount of the work. It will
