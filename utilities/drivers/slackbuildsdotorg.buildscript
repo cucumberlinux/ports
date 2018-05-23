@@ -216,7 +216,7 @@ drv_build () {
 
 	# Build and compress the package
 	pushd "$OWD"
-	bash ${NAME}.SlackBuild || exit 1
+	. ${NAME}.SlackBuild || exit 1
 	popd
 }
 
