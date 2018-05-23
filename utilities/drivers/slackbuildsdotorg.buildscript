@@ -216,8 +216,7 @@ drv_build () {
 
 	# Build and compress the package
 	pushd "$OWD"
-	set -e
-	. ${NAME}.SlackBuild
+	bash ${NAME}.SlackBuild || exit 1
 	popd
 }
 
@@ -263,9 +262,9 @@ source $OWD/${BASENAME}.info
 NAME=$PRGNAM
 TARNAME=${TARNAME:-$NAME}
 BUILD=${BUILD:-1}
-TAG=
+export TAG=
 # Make MAXJOBS default to the number of CPUs
-MAXJOBS=${MAXJOBS:-$(egrep "processor[[:blank:]]:" /proc/cpuinfo | wc | awk '{ print $1 }')}
+export MAXJOBS=${MAXJOBS:-$(egrep "processor[[:blank:]]:" /proc/cpuinfo | wc | awk '{ print $1 }')}
 
 case $1 in
 	download)	drv_download ;;
