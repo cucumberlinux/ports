@@ -25,7 +25,7 @@
 NAME=pycurl
 VERSION=7.43.0.1
 URL=(https://dl.bintray.com/$NAME/$NAME/$NAME-$VERSION.tar.gz)
-BUILDDEPS=(python3)
+BUILDDEPS=(python2 python3)
 
 build () {
 
@@ -37,6 +37,7 @@ build () {
 	pkgapi_apply_patches || exit 1
 
 	# Do the actual build
+	python2 setup.py --with-ssl install --root=$DESTDIR || exit 1
 	python3 setup.py --with-ssl install --root=$DESTDIR || exit 1
 
 	# Strip all of the binaries and libraries in $DESTDIR/ of their
