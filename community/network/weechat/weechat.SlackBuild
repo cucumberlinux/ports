@@ -88,15 +88,15 @@ find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | gr
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
 if [ -e $PKG/usr/share/man ]; then
-  mv $PKG/usr/share/man $PKG/usr/man
-  find $PKG/usr/man -type f -exec gzip -9 {} \;
+  mv $PKG/usr/share/man $PKG/usr/share/man
+  find $PKG/usr/share/man -type f -exec gzip -9 {} \;
 fi
 
-mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+mkdir -p $PKG/usr/share/doc/$PRGNAM-$VERSION
 cp -a \
   AUTHORS.adoc COPYING ChangeLog.adoc README.adoc ReleaseNotes.adoc \
-  $PKG/usr/doc/$PRGNAM-$VERSION
-cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+  $PKG/usr/share/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/share/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
