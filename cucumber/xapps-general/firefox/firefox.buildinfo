@@ -153,7 +153,7 @@ StartupNotify=true
 EOF
 
 	VERSION_NOESR=$(echo $VERSION | sed -e 's/esr//')
-	ln -sfv /usr/lib/firefox-$VERSION_NOESR/browser/icons/mozicon128.png  \
+	ln -sfv ../../lib/firefox/browser/chrome/icons/default/default128.png  \
 		$DESTDIR/usr/share/pixmaps/firefox.png
 
 	# Strip all of the binaries and libraries in $DESTDIR/ of their
