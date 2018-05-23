@@ -72,7 +72,10 @@ CFLAGS="$SLKCFLAGS" \
   --with-qemu-group=$VIRTGROUP \
   --with-init-script=none
 
-pkgapi_make \
+make -j$MAXJOBS \
+  HTML_DIR=/usr/share/doc/$PRGNAM-$VERSION \
+  EXAMPLE_DIR=/usr/share/doc/$PRGNAM-$VERSION/examples || \
+make \
   HTML_DIR=/usr/share/doc/$PRGNAM-$VERSION \
   EXAMPLE_DIR=/usr/share/doc/$PRGNAM-$VERSION/examples
 make \
