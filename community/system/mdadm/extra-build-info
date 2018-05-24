@@ -1,0 +1,5 @@
+# Additional build information 
+
+NAME=mdadm
+URL=https://mirrors.slackware.com/slackware/slackware64-14.2/source/a/mdadm/mdadm-3.3.4.tar.xz
+BUILDDEPS=
