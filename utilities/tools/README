@@ -18,6 +18,15 @@ following:
 	`ports/utilities/tools/convert-slackbuildsdotorg-slackbuild \
 	/path/to/foo.SlackBuild`
 
+§ convert-slackware-slackbuild
+This script converts a Slackware formatted .SlackBuild file to a format
+suitable for use in the Cucumber Linux ports system. To use this script, do the
+following:
+1. Download the entire source directory from mirrors.slackware.com.
+2. Run the following command:
+	`ports/utilities/tools/convert-slackware-slackbuild \
+	/path/to/foo.SlackBuild`
+
 § generate-cucumber-buildinfo-template
 Generates a template buildinfo directory. This is useful when creating a
 buildinfo for a new package as it automates a good amount of the work. It will

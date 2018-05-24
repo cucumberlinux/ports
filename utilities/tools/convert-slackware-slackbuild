@@ -1,0 +1,124 @@
+#!/bin/bash
+
+# Copyright 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+if [ $# -ne 1 ]; then
+	cat << EOF
+This script converts a Slackware Linux formatted .SlackBuild file to a format
+suitable for use in the Cucumber Linux ports system. To use this script, do the
+following:
+1. Download the entire source directory from mirrors.slackware.com.
+2. Run \`$0 /path/to/foo.SlackBuild\`.
+
+Usage: $0 <foo.SlackBuild>
+EOF
+	exit 1
+fi
+
+BASEDIR=$(dirname $0)
+slackbuild=$1
+slackbuild_dir=$(realpath $(dirname $slackbuild))
+pkgname=$(echo $1 | rev | cut -d . -f 2- | rev)
+cd $slackbuild_dir || exit 1
+
+# Get rid of the build tag (we don't need it)
+sed -i $slackbuild -e '/^TAG=/d' || exit 1
+
+# Fix some commonly misplaced directories (Slackware places these in non-FHS
+# compliant locations)
+sed -i $slackbuild -e '
+	s|/usr/man|/usr/share/man|g;
+	s|/usr/doc|/usr/share/doc|g;
+	s|/usr/info|/usr/share/info|g;
+' || exit 1
+
+if [ -e $slackbuild_dir/rc.* ]; then
+	mkdir -p "$slackbuild_dir/initscripts" || exit 1
+	for file in $slackbuild_dir/rc.*; do
+		basename=$(echo $file | cut -d . -f 2-)
+		cat >> "$file" << EOF
+### BEGIN SYMLINK INFO
+# This section controls the name of the symlinks that are created in
+# /etc/rc.d/rc?.d by chkconfig and the system init setup script.
+# START_LINK_NAME       S99$basename
+# KILL_LINK_NAME        K00$basename
+### END SYMLINK INFO
+
+### BEGIN INIT INFO
+# Provides:             $basename
+# Default-Start: 3 4 5
+# Default-Stop: 0 1 2 6
+### END INIT INFO
+
+EOF
+		mv "$file" "$slackbuild_dir/initscripts/$basename" || exit 1
+		chmod 755 "$slackbuild_dir/initscripts/$basename" || exit 1
+	done
+	sed -i $slackbuild -e '/makepkg/i \
+if [ -d $CWD/initscripts ]; then \
+	mkdir -p $PKG/etc/rc.d/init.d || exit 1 \
+	cp $CWD/initscripts/* $PKG/etc/rc.d/init.d || exit 1 \
+fi'
+fi
+
+cat > $slackbuild_dir/extra-build-info << EOF
+# Additional build information 
+
+EOF
+
+# Set URL
+cat << EOF
+Enter the URL to download the source tarball from. In the case of multiple
+URLs, enter them as a space separated list. Please do not use any variables. You
+may use either the upstream download URL or the slackware.com URL, but if you
+use Slackware's URL, make sure you are not using the URL from the -current
+branch as these are highly subject to change.
+EOF
+read URL
+echo URL=$URL >> $slackbuild_dir/extra-build-info
+
+# Set BUILDDEPS
+echo Enter any build time dependencies for $NAME as a space separated list. glibc, gcc and binutils are implicit and do not need to be entered. If there are no build time dependencies, leave this blank and press enter.
+read BUILDDEPS
+echo BUILDDEPS=$BUILDDEPS >> $slackbuild_dir/extra-build-info
+
+# Create the checksums
+sha512sum *.tar.?z[,2] > sha512sums
+
+# Make the .SlackBuild file non-executable so people don't accidentally run it;
+# they should run the .buildscript instead.
+chmod -x $slackbuild || exit 1
+
+# Add a symlink the the slackbuilds.org buildscript driver.
+ln -s $(realpath "$BASEDIR/../drivers/slackware.buildscript" --relative-to "$slackbuild_dir") "$slackbuild_dir/${pkgname}.buildscript" || exit 1
+
+# Print a disclaimer
+cat << EOF
+
+$slackbuild has been converted to a Cucumber Linux ports tree compatible format.
+YOU'RE NOT DONE YET!
+
+$slackbuild will require additional editing. Here are some things that were not
+done by this script that you must do manually:
+* Update the copyright line in to include your name and the current year.
+* Verify that the checksum verification works.
+EOF
+
