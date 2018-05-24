@@ -82,6 +82,8 @@ fi
 cat > $slackbuild_dir/extra-build-info << EOF
 # Additional build information 
 
+NAME=$pkgname
+VERSION=
 EOF
 
 # Set URL
@@ -101,7 +103,7 @@ read BUILDDEPS
 echo BUILDDEPS=$BUILDDEPS >> $slackbuild_dir/extra-build-info
 
 # Create the checksums
-sha512sum *.tar.?z[,2] > sha512sums
+sha512sum *.tar.?z{,2} > sha512sums
 
 # Make the .SlackBuild file non-executable so people don't accidentally run it;
 # they should run the .buildscript instead.

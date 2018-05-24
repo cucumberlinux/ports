@@ -42,7 +42,7 @@ BASENAME=$( basename $0 | rev | cut -d . -f 2- | rev )
 # Downloads the source for this package
 drv_download () {
 	if [ -z "$URL" ]; then
-		echo "Error downloading source for $BASENAME: no URL is present in ${BASENAME}.buildinfo"
+		echo "Error downloading source for $BASENAME: no URL is present in extra-build-info"
 		exit 2
 	fi
 
@@ -135,9 +135,7 @@ drv_build () {
 	esac
 
 	# Set some variables specific to the build environment
-	PACKAGE=$NAME-$VERSION-$CUCARCH-$BUILD
-	export OUTPUT=${OUTDIR:-/tmp}
-	TMP=${BUILDDIR:-/tmp/$PACKAGE}
+	export TMP=${OUTDIR:-/tmp}
 
 	# If the build directory already exists, remove it so we have a fresh
 	# start
@@ -187,10 +185,9 @@ EOF
 OWD=$(realpath $(dirname $0))
 
 # Load everything from the appropriate .buildinfo file
-source $OWD/${BASENAME}.info
+source $OWD/extra-build-info
 
 # Set some global variables
-NAME=$PRGNAM
 TARNAME=${TARNAME:-$NAME}
 BUILD=${BUILD:-1}
 export TAG=
