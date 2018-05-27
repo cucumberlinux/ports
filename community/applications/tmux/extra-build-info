@@ -1,0 +1,6 @@
+# Additional build information 
+
+NAME=tmux
+VERSION=
+URL=https://mirrors.slackware.com/slackware/slackware64-14.2/source/ap/tmux/tmux-2.1.tar.xz
+BUILDDEPS=libevent
