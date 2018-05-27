@@ -50,6 +50,9 @@ sed -i $slackbuild -e '
 	s|/usr/info|/usr/share/info|g;
 ' || exit 1
 
+# Change any occurences of 'slackware' to 'cucumber'
+sed -i $slackbuild -e 's/slackware/cucumber/g' || exit 1
+
 if [ -e $slackbuild_dir/rc.* ]; then
 	mkdir -p "$slackbuild_dir/initscripts" || exit 1
 	for file in $slackbuild_dir/rc.*; do
