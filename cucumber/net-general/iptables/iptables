@@ -93,8 +93,10 @@ case "${1}" in
       log_info_msg "Saving iptables configuration..."
       iptables-save > /etc/iptables/rules
       chmod 600 /etc/iptables/rules
+      chown root /etc/iptables/rules
       ip6tables-save > /etc/iptables/rules6
       chmod 600 /etc/iptables/rules6
+      chown root /etc/iptables/rules6
       evaluate_retval
       ;;
    *)
