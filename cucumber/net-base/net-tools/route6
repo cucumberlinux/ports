@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# This is a convenience script for viewing and manipulating the IPv6 routing
+# table.
+exec route -A inet6 $@
+

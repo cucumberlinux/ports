@@ -1,0 +1,88 @@
+#!/bin/bash
+
+# Copyright 2016, 2018 Scott Court
+#
+# This script is based on a heavily modified version of Patrick Volkerding's
+# Slackbuild script
+# (http://mirrors.slackware.com/slackware/slackware64-14.2/source/n/net-tools/)
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for net-tools
+
+NAME=net-tools
+TARNAME=distrotech-net-tools
+VERSION=2.10.alpha
+TARVERSION=2.10-alpha
+URL=(https://github.com/Distrotech/$NAME/archive/$TARNAME-$TARVERSION.tar.gz)
+BUILDDEPS=()
+
+build () {
+
+	tar -xf "$OWD/$TARNAME-$TARVERSION.tar.gz" || exit 1
+	cd $NAME-* || exit 1
+
+	mkdir -p $DESTDIR/usr/share/doc/net-tools-$VERSION
+	cp -a COPYING* README* $DESTDIR/usr/share/doc/net-tools-$VERSION
+	chmod 644 $DESTDIR/usr/share/doc/net-tools-$VERSION/*
+	chown root:root $DESTDIR/usr/share/doc/net-tools-$VERSION/*
+
+	# Apply any patches located in $OWD/patches
+	pkgapi_apply_patches || exit 1
+
+	# Do the actual build
+	yes "" | ./configure.sh config.in || exit 1
+	pkgapi_make || exit 1
+	pkgapi_make hostname || exit 1
+	make installbin BASEDIR=$DESTDIR
+
+	# Strip all of the binaries and libraries in $DESTDIR/ of their
+	# debugging symbols.
+	pkgapi_strip
+
+	# Install the binaries
+	chmod 755 $DESTDIR/sbin/* $DESTDIR/bin/* $DESTDIR/usr/sbin/*
+	cd man/en_US
+	mkdir -p $DESTDIR/usr/share/man/man{1,5,8}
+	for page in dnsdomainname.1 domainname.1 hostname.1 nisdomainname.1 \
+		ypdomainname.1 ; do
+		cat $page > $DESTDIR/usr/share/man/man1/$page
+	done
+	cat ethers.5 > $DESTDIR/usr/share/man/man5/ethers.5
+	for page in arp.8 ifconfig.8 mii-tool.8 nameif.8 netstat.8 rarp.8 route.8 \
+		slattach.8 plipconfig.8 ; do
+		cat $page > $DESTDIR/usr/share/man/man8/$page
+	done
+	( cd $DESTDIR/bin
+		ln -sf hostname dnsdomainname
+		ln -sf hostname nisdomainname
+		ln -sf hostname ypdomainname
+	)
+
+	# Install the route6 script. This script adds a shortcut (route6) for
+	# `route -A inet6`
+	install -m 755 $OWD/route6 $DESTDIR/bin/route6 || exit 1
+	ln -s route.8 $DESITDIR/usr/share/man/man8/route6.8 || exit 1
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+}
+
