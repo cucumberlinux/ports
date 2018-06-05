@@ -1,0 +1,80 @@
+#!/bin/bash
+
+# Copyright 2016, 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for sysvinit
+
+NAME=sysvinit
+VERSION=2.89
+URL=(https://download-mirror.savannah.gnu.org/releases/$NAME/$NAME-$VERSION.tar.bz2)
+BUILDDEPS=()
+
+build () {
+
+	tar -xf "$OWD/$NAME-$VERSION.tar.bz2" || exit 1
+	cd $NAME-$VERSION || exit 1
+
+	# Apply any patches located in $OWD/patches
+	pkgapi_apply_patches || exit 1
+
+	# Do the actual build
+	pkgapi_make -C src || exit 1
+	make -C src install ROOT=$DESTDIR || exit 1
+
+	# Strip all of the binaries and libraries in $DESTDIR/ of their
+	# debugging symbols.
+	pkgapi_strip
+
+	# Add a README file for users who were expecting to see /etc/systemd.
+	mkdir -pv $DESTDIR/etc/systemd
+	cat > $DESTDIR/etc/systemd/README << EOF
+An Ode to Sysvinit
+
+I do not like this Systemd;
+I do not like its process tree.
+Its root process is not init,
+which makes the whole tree look like shit.
+
+I do not like this Systemd;
+it stores its logs in binary.
+Not only is this a resource hog
+but now I can't tail /var/log.
+
+I do not like this Systemd;
+it breaks the KISS philosophy.
+It eats up everything it can:
+Udev, ConsoleKit, it's a one man band!
+
+So now I hope that you can see
+why I don't like Systemd.
+It really is a piece of shit.
+I'll stick with Sysvinit.
+
+Scott Court
+2016
+EOF
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+}
+

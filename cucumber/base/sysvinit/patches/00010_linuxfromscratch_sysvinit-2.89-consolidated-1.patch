@@ -1,0 +1,109 @@
+ubmitted By: Bruce Dubbs <bdubbs at linuxfromscratch dot org>
+Date: 2018-03-30
+Initial Package Version: 2.89
+Upstream Status: Not Submitted
+Origin: Self
+Description: 
+ 1. Remove programs superceeded by other packages: wall, mountpoint, 
+    last, lastb, mesg, sulogin, and utmpdump.
+ 2. Clean up a compiler warnings in hddown.c, init.c, and shutdown.c.
+
+diff -Naur sysvinit-2.89/src/hddown.c sysvinit-2.89.new/src/hddown.c
+--- sysvinit-2.89/src/hddown.c	2018-03-28 11:49:50.000000000 -0500
++++ sysvinit-2.89.new/src/hddown.c	2018-03-30 12:54:46.206277852 -0500
+@@ -233,6 +233,7 @@
+ 	case DISK_EXTFLUSH:
+ 		if ((ret = ioctl(fd, HDIO_DRIVE_CMD, &flush1)) == 0)
+ 			break;
++      /* Fall through */
+ 		/* Extend flush rejected, try standard flush */
+ 	default:
+ 		ret = ioctl(fd, HDIO_DRIVE_CMD, &flush2) &&
+diff -Naur sysvinit-2.89/src/init.c sysvinit-2.89.new/src/init.c
+--- sysvinit-2.89/src/init.c	2018-03-28 11:49:50.000000000 -0500
++++ sysvinit-2.89.new/src/init.c	2018-03-30 12:52:20.044169437 -0500
+@@ -1308,6 +1308,7 @@
+ 		case POWERFAIL:
+ 		case ONCE:
+ 			if (ch->flags & XECUTED) break;
++         /* Fall through */
+ 		case ONDEMAND:
+ 		case RESPAWN:
+   			ch->flags |= RUNNING;
+diff -Naur sysvinit-2.89/src/Makefile sysvinit-2.89.new/src/Makefile
+--- sysvinit-2.89/src/Makefile	2018-03-28 11:49:50.000000000 -0500
++++ sysvinit-2.89.new/src/Makefile	2018-03-30 12:48:11.261085896 -0500
+@@ -24,18 +24,21 @@
+ # For some known distributions we do not build all programs, otherwise we do.
+ BIN	=
+ SBIN	= init halt shutdown runlevel killall5 fstab-decode
+-USRBIN	= last mesg
++#USRBIN	= last mesg
+ 
+-MAN1	= last.1 lastb.1 mesg.1
++#MAN1	= last.1 lastb.1 mesg.1
+ MAN5	= initscript.5 inittab.5
+-MAN8	= halt.8 init.8 killall5.8 pidof.8 poweroff.8 reboot.8 runlevel.8
++#MAN8	= halt.8 init.8 killall5.8 pidof.8 poweroff.8 reboot.8 runlevel.8
++MAN8	= halt.8 init.8 killall5.8         poweroff.8 reboot.8 runlevel.8
+ MAN8	+= shutdown.8 telinit.8 fstab-decode.8
+ 
+ ifeq ($(DISTRO),)
+-SBIN	+= sulogin bootlogd
+-USRBIN	+= utmpdump wall
+-MAN1	+= utmpdump.1 wall.1
+-MAN8	+= sulogin.8 bootlogd.8
++#SBIN	+= sulogin bootlogd
++SBIN	+= bootlogd
++#USRBIN	+= utmpdump wall
++#MAN1	+= utmpdump.1 wall.1
++#MAN8	+= sulogin.8 bootlogd.8
++MAN8	+= bootlogd.8
+ endif
+ 
+ ifeq ($(DISTRO),Debian)
+@@ -192,10 +195,10 @@
+ 		ln -sf halt $(ROOT)/sbin/reboot
+ 		ln -sf halt $(ROOT)/sbin/poweroff
+ 		ln -sf init $(ROOT)/sbin/telinit
+-		ln -sf /sbin/killall5 $(ROOT)/bin/pidof
+-		if [ ! -f $(ROOT)/usr/bin/lastb ]; then \
+-			ln -sf last $(ROOT)/usr/bin/lastb; \
+-		fi
++		#ln -sf /sbin/killall5 $(ROOT)/bin/pidof
++		#if [ ! -f $(ROOT)/usr/bin/lastb ]; then \
++		#	ln -sf last $(ROOT)/usr/bin/lastb; \
++		#fi
+ 		$(INSTALL_DIR) $(ROOT)/usr/include/
+ 		$(INSTALL_DATA) initreq.h $(ROOT)/usr/include/
+ 		$(INSTALL_DIR) $(ROOT)$(MANDIR)/man1/
+@@ -213,12 +216,12 @@
+ 			$(INSTALL_DATA) ../man/$$man $(ROOT)$(MANDIR)/man8/; \
+ 			sed -i "1{ $(MANDB); }" $(ROOT)$(MANDIR)/man8/$$man ; \
+ 		done
+-ifeq ($(ROOT),)
++#ifeq ($(ROOT),)
+ 		#
+ 		# This part is skipped on Debian systems, the
+ 		# debian.preinst script takes care of it.
+-		@if [ ! -p /run/initctl ]; then \
+-		 echo "Creating /run/initctl"; \
+-		 rm -f /run/initctl; \
+-		 mknod -m 600 /run/initctl p; fi
+-endif
++		#@if [ ! -p /run/initctl ]; then \
++		# echo "Creating /run/initctl"; \
++		# rm -f /run/initctl; \
++		# mknod -m 600 /run/initctl p; fi
++#endif
+diff -Naur sysvinit-2.89/src/shutdown.c sysvinit-2.89.new/src/shutdown.c
+--- sysvinit-2.89/src/shutdown.c	2018-03-28 11:49:50.000000000 -0500
++++ sysvinit-2.89.new/src/shutdown.c	2018-03-30 12:45:22.856409920 -0500
+@@ -41,6 +41,7 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <sys/wait.h>
++#include <sys/sysmacros.h>
+ #include <time.h>
+ #include <string.h>
+ #include <errno.h>
