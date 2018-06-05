@@ -1,0 +1,98 @@
+#!/bin/bash
+
+# Copyright 2016, 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for eudev
+
+NAME=eudev
+VERSION=3.2.5
+URL=(https://dev.gentoo.org/~blueness/$NAME/$NAME-$VERSION.tar.gz)
+BUILDDEPS=()
+
+build () {
+
+	tar -xf "$OWD/$NAME-$VERSION.tar.gz" || exit 1
+	cd $NAME-$VERSION || exit 1
+
+	# Fix a test script:
+	sed -r -i 's|/usr(/bin/test)|\1|' test/udev-test.pl
+
+	# If we are building with /tools, add a workaround to prevent the
+	# /tools directory from being hard coded into Eudev binary files
+	# library locations.
+	if [ -e /tools ]; then
+		cat > config.cache << "EOF"
+HAVE_BLKID=1
+BLKID_LIBS="-lblkid"
+BLKID_CFLAGS="-I/tools/include"
+EOF
+	fi
+
+	# Apply any patches located in $OWD/patches
+	pkgapi_apply_patches || exit 1
+
+	# Do the actual build
+	./configure \
+		--prefix=/usr \
+		--libdir=/usr/lib${LIBDIRSUFFIX} \
+		--sysconfdir=/etc \
+		--localstatedir=/var \
+		--bindir=/sbin \
+		--sbindir=/sbin \
+		--libexecdir=/lib${LIBDIRSUFFIX} \
+		--with-rootprefix= \
+		--with-rootlibdir=/lib${LIBDIRSUFFIX} \
+		--enable-manpages \
+		--disable-static \
+		--config-cache \
+		--build=$CUCARCH-cucumber-linux || exit 1
+	if [ -e /tools ]; then
+		export LIBRARY_PATH=/tools/lib
+	fi
+	pkgapi_make || exit 1
+	if [ -e /tools ]; then
+		unset LIBRARY_PATH
+		export LD_LIBRARY_PATH=/tools/lib
+	fi
+	mkdir -pv $DESTDIR/lib/udev/rules.d
+	mkdir -pv $DESTDIR/etc/udev/rules.d
+	make install DESTDIR=$DESTDIR || exit 1
+	if [ -e /tools ]; then
+		unset LD_LIBRARY_PATH
+	fi
+
+	# Install some basic eudev rules
+	tar -xvf $OWD/udev-lfs-20140408.tar.bz2 || exit 1
+	make -f udev-lfs-20140408/Makefile.lfs install || exit 1
+
+	# Move udev.conf so it is not clobbered on package upgrades.
+	mv $DESTDIR/etc/udev/udev.conf{,.new} || exit 1
+
+	# Strip all of the binaries and libraries in $DESTDIR/ of their
+	# debugging symbols.
+	pkgapi_strip
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+}
+
