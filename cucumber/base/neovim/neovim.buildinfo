@@ -1,0 +1,109 @@
+#!/bin/bash
+
+# Copyright 2016, 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for neovim
+
+NAME=neovim
+VERSION=0.2.2
+URL=(https://github.com/$NAME/$NAME/archive/v$VERSION.tar.gz)
+BUILDDEPS=()
+
+build () {
+
+	tar -xf "$OWD/v$VERSION.tar.gz" || exit 1
+	cd ${NAME}-${VERSION} || exit 1
+
+	# Apply any patches located in $OWD/patches
+	pkgapi_apply_patches || exit 1
+
+	# Build the bundled dependencies
+	mkdir .deps
+	cd .deps || exit 1
+	cmake ../third-party || exit 1
+	pkgapi_make || exit 1
+	cd ..
+
+	# Do the actual build
+	mkdir build
+	cd build || exit 1
+	cmake \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=/usr/lib${LIBDIRSUFFIX} \
+	.. || exit 1
+	pkgapi_make || exit 1
+	make install DESTDIR=$DESTDIR || exit 1
+
+	# Many users are used to using vi instead of nvim. To allow execution of
+	# neovim when users habitually enter vi, create a symlink for both the
+	# binary and the man page in the provided languages:
+	ln -sv nvim $DESTDIR/usr/bin/vi
+	for L in  $DESTDIR/usr/share/man/man1/nvim.1; do
+		ln -sv nvim.1 $(dirname $L)/vi.1 || exit 1
+	done
+
+	# By default, Neovim's documentation is installed in /usr/share/nvim.
+	# The following symlink allows the documentation to be accessed via
+	# /usr/share/doc/nvim-$VERSION, making it consistent with the location
+	# of documentation for other packages:
+	mkdir $DESTDIR/usr/share/doc || exit 1
+	ln -sv ../nvim/runtime/doc $DESTDIR/usr/share/doc/nvim-$VERSION || exit 1
+
+	# Create a default nvimrc
+	mkdir -pv $DESTDIR/etc/xdg/nvim
+	cat > $DESTDIR/etc/xdg/nvim/init.vim.new << "EOF"
+" Neovim Global Configuration File
+
+" Begin /etc/xdg/nvim/init.vim
+
+set nocompatible
+set backspace=2
+syntax on
+if (&term == "iterm") || (&term == "putty")
+	set background=dark
+endif
+
+" Source the user's .vimrc and .nvimrc files if they exist
+if ! empty(glob("~/.vimrc"))
+        source ~/.vimrc
+endif
+if ! empty(glob("~/.nvimrc"))
+        source ~/.nvimrc
+endif
+
+" Disable the GUI cursor. It causes issues on some termianl emulators such as
+" Xfce4-terminal
+set guicursor=
+
+" End /etc/xdg/nvim/init.vim
+EOF
+	ln -s xdg/nvim/init.vim $DESTDIR/etc/nvimrc || exit 1
+
+	# Strip all of the binaries and libraries in $DESTDIR/ of their
+	# debugging symbols.
+	pkgapi_strip
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+}
+

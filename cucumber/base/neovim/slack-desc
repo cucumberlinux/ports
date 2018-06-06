@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+      |-----handy-ruler------------------------------------------------------|
+neovim: neovim (literally the future of vim)
+neovim:
+neovim: Neovim is a refactor, and sometimes redactor, in the tradition of Vim
+neovim: (which itself derives from Stevie). It is not a rewrite but a
+neovim: continuation and extension of Vim. Many clones and derivatives exist,
+neovim: some very clever--but none are Vim. Neovim is built for users who want
+neovim: the good parts of Vim, and more.
+neovim:
+neovim: Neovim is developed primarily by Justin M. Keyes with assistance from
+neovim: various other developers. Website: https://neovim.io/
+neovim:
