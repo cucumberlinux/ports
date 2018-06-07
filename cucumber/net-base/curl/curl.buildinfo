@@ -48,7 +48,7 @@ build () {
 		--disable-static \
 		--enable-threaded-resolver \
 		--build=$CUCARCH-cucumber-linux || exit 1
-	make || exit 1
+	pkgapi_make || exit 1
 	make install DESTDIR=$DESTDIR || exit 1
 
 	# Install Documentation
