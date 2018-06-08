@@ -1,0 +1,5 @@
+#!/bin/bash
+
+#BLURB="Update PCI IDs Database"
+echo "Updating /usr/share/hwdata/pci.ids"
+update-pciids
