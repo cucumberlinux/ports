@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|' on
+# the right side marks the last column you can put a character in.  You must make
+# exactly 11 lines for the formatting to be correct.  It's also customary to
+# leave one space after the ':'.
+
+              |-----handy-ruler------------------------------------------------------|
+cacertificates: cacertificates (Certificate Authority Certificates)
+cacertificates:
+cacertificates: The Public Key Infrastructure is used for many security issues in a 
+cacertificates: Linux system. In order for a certificate to be trusted, it must be
+cacertificates: signed by a trusted agent called a Certificate Authority (CA). The 
+cacertificates: certificates loaded by this section are from the list on the Mozilla
+cacertificates: version control system and formats it into a form used by 
+cacertificates: OpenSSL. The certificates can also be used by other applications
+cacertificates: either directly of indirectly through openssl. 
+cacertificates:
+cacertificates: The certdata.txt is provided by the NSS package.

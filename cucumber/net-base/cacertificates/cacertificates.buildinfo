@@ -1,0 +1,80 @@
+#!/bin/bash
+
+# Copyright 2016, 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for cacertificates
+
+NAME=cacertificates
+VERSION=3.37.3
+URL_DIR_VERSION=$(echo $VERSION | sed -e 's/\./_/g')
+echo $URL_DIR_VERSION
+URL=(https://archive.mozilla.org/pub/security/nss/releases/NSS_${URL_DIR_VERSION}_RTM/src/nss-$VERSION.tar.gz)
+BUILDDEPS=()
+
+CUCARCH=noarch
+
+build () {
+
+	# Extract the NSS source
+	tar -xzf $OWD/nss-$VERSION.tar.gz
+
+	# Create the necessary scripts
+	mkdir $DESTDIR/usr/{bin,sbin} -pv
+	install -m 755 $OWD/scripts/make-cert.pl \
+		$DESTDIR/usr/bin/make-cert.pl || exit 1
+	install -m 755 $OWD/scripts/make-ca.sh \
+		$DESTDIR/usr/bin/make-ca.sh || exit 1
+	install -m 744 $OWD/scripts/remove-expired-certs.sh \
+		$DESTDIR/usr/sbin/remove-expired-certs.sh || exit 1
+
+	# Copy the certdata.txt over from NSS
+	cp nss-*/nss/lib/ckfw/builtins/certdata.txt ./ || exit 1
+	# Workaround to add a revision field for make-ca.sh
+	echo '#CVS_ID$.$.$'"$VERSION" >> certdata.txt
+
+	$DESTDIR/usr/bin/make-ca.sh || exit 1
+	echo made certs
+	SSLDIR=$DESTDIR/etc/ssl                                              
+	mkdir -pv $SSLDIR
+	$DESTDIR/usr/sbin/remove-expired-certs.sh certs || exit 1
+
+	install -d ${SSLDIR}/certs
+	cp -v certs/*.pem ${SSLDIR}/certs
+	c_rehash || exit 1
+	install BLFS-ca-bundle*.crt ${SSLDIR}/ca-bundle.crt || exit 1
+	ln -sfv ../ca-bundle.crt ${SSLDIR}/certs/ca-certificates.crt || exit 1
+
+	# Setup .0 symlinks
+	for file in $(cd $DESTDIR/etc/ssl/certs; ls *.pem); do
+		basename=$( echo $file | rev | cut -d . -f 2- | rev )
+		echo $basename 
+		ln -s $file $DESTDIR/etc/ssl/certs/${basename}.0
+	done
+
+	unset SSLDIR
+	rm -r certs BLFS-ca-bundle*
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+}
+

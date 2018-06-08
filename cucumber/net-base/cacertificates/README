@@ -1,0 +1,5 @@
+The certdata.txt file contains raw Certificate Authority Cerficates as provided
+by Mozilla in the NSS library. To get an updated list of certificates, extract
+the file nss/lib/ckfw/builtins/certdata.txt from the latest version of the NSS
+sources (see cucumber/lib-base/nss). This is done automatically when running
+the buildscript.
