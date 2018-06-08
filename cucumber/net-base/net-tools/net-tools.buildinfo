@@ -78,7 +78,7 @@ build () {
 	# Install the route6 script. This script adds a shortcut (route6) for
 	# `route -A inet6`
 	install -m 755 $OWD/route6 $DESTDIR/bin/route6 || exit 1
-	ln -s route.8 $DESITDIR/usr/share/man/man8/route6.8 || exit 1
+	ln -s route.8 $DESTDIR/usr/share/man/man8/route6.8 || exit 1
 
 	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
 	# $DESTDIR/install, creating $DESTDIR/install if need be.
