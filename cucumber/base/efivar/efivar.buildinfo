@@ -1,0 +1,60 @@
+#!/bin/bash
+
+# Copyright 2016, 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for efivar
+
+NAME=efivar
+VERSION=35
+URL=(https://github.com/rhboot/$NAME/archive/$VERSION.tar.gz)
+BUILDDEPS=()
+
+build () {
+
+	tar -xf "$OWD/$VERSION.tar.gz" || exit 1
+	cd $NAME*-$VERSION || exit 1
+
+	# Apply any patches located in $OWD/patches
+	pkgapi_apply_patches || exit 1
+
+	# Do the actual build
+	pkgapi_make libdir="/usr/lib${LIBDIRSUFFIX}/" \
+		bindir="/usr/bin/" \
+		mandir="/usr/share/man/" \
+		includedir="/usr/include/" V=1 -j1 || exit 1
+	make install DESTDIR=$DESTDIR \
+		libdir="/usr/lib${LIBDIRSUFFIX}/" \
+		bindir="/usr/bin/" \
+		mandir="/usr/share/man/" \
+		includedir="/usr/include/" V=1 -j1 || exit 1
+	mkdir -p $DESTDIR/usr/bin
+	install -v -D -m0755 src/test/tester $DESTDIR/usr/bin/efivar-tester
+
+	# Strip all of the binaries and libraries in $DESTDIR/ of their
+	# debugging symbols.
+	pkgapi_strip
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+}
+
