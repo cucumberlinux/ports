@@ -52,10 +52,6 @@ build () {
 	pkgapi_make hostname || exit 1
 	make installbin BASEDIR=$DESTDIR
 
-	# Strip all of the binaries and libraries in $DESTDIR/ of their
-	# debugging symbols.
-	pkgapi_strip
-
 	# Install the binaries
 	chmod 755 $DESTDIR/sbin/* $DESTDIR/bin/* $DESTDIR/usr/sbin/*
 	cd man/en_US
@@ -79,6 +75,10 @@ build () {
 	# `route -A inet6`
 	install -m 755 $OWD/route6 $DESTDIR/bin/route6 || exit 1
 	ln -s route.8 $DESTDIR/usr/share/man/man8/route6.8 || exit 1
+
+	# Strip all of the binaries and libraries in $DESTDIR/ of their
+	# debugging symbols.
+	pkgapi_strip
 
 	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
 	# $DESTDIR/install, creating $DESTDIR/install if need be.
