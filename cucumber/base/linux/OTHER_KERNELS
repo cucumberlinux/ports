@@ -1,0 +1,5 @@
+Alternative kernels, along with the kernel source, may be found in the kernels directory
+of the binary and source trees. Currently, the following alternative kernel packages are
+available:
+
+linux-source		The source code for the linux kernel.

@@ -1,0 +1,128 @@
+#!/bin/bash
+
+# Copyright 2016, 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for linux
+
+NAME=linux
+VERSION=4.9.107
+URL=(	https://cdn.kernel.org/pub/$NAME/kernel/v4.x/$NAME-$VERSION.tar.xz
+	https://cdn.kernel.org/pub/$NAME/kernel/v4.x/$NAME-$VERSION.tar.sign)
+BUILDDEPS=()
+
+verify () {
+	xz -dk $NAME-$VERSION.tar.xz
+        pkgapi_gpg --verify $NAME-$VERSION.tar.sign
+	local RETVAL=$?
+	rm $NAME-$VERSION.tar
+	return $RETVAL
+}
+
+build () {
+
+	# Check for the presence of a version of GCC >= 7.3.0/8.1.0 or
+	# /opt/kernel_gcc. These are the versions of GCC that enable the kernel
+	# to be compiled with a more complete Spectre v2 (CVE-2017-5715)
+	# mitigation. If attempting to compile the kernel with an older
+	# compiler, throw an error so the kernel is not compiled without the
+	# mitigation by default.
+	GCC_VERSION=$(gcc --version | head -n1 | cut -d ' ' -f 3)
+	GCC_MAJOR_VERSION=$(echo $GCC_VERSION | cut -d . -f 1)
+	GCC_MINOR_VERSION=$(echo $GCC_VERSION | cut -d . -f 2)
+	if [[ $GCC_MAJOR_VERSION -ge 9 || ( $GCC_MAJOR_VERSION -eq 8 && $GCC_MINOR_VERSION -ge 1 ) || ( $GCC_MAJOR_VERSION -eq 7 && $GCC_MINOR_VERSION -ge 3 ) ]]; then
+		cat << EOF
+Building the Linux kernel with full Spectre v2 (CVE-2017-5715) using the
+retpoline aware system compiler (GCC $GCC_VERSION).
+EOF
+	elif [ "$MITIGATE_SPECTRE" = "FALSE" ]; then
+		cat << EOF
+********************************************************************************
+* WARNING: building the Linux kernel without full Spectre v2 (CVE-2017-5715)   *
+* mitigation. This is not recommended.                                         *
+********************************************************************************
+EOF
+	elif [ ! -d /opt/kernel-gcc ]; then
+		cat << EOF
+********************************************************************************
+*                   ERROR: kernel-gcc package is not installed!                *
+*                                                                              *
+* In order to fully mitigate the effects of the Spectre v2 vulnerability       *
+* (CVE-2017-5715), the Linux kernel must be compiled with a version of GCC     *
+* that has the retpoline feature enabled in the compiler. This feature was     *
+* introduced in GCC 7.3.0. This system is running GCC $GCC_VERSION.                   *
+*                                                                              *
+* Please either upgrade the compiler or install the kernel-gcc package. The    *
+* kernel-gcc package can be installed by running \`pickle kernel-gcc\`.          *
+*                                                                              *
+* If you really want to build the Linux kernel without Spectre v2 mitigation,  *
+* then rerun this script with MITIGATE_SPECTRE=FALSE. This is not recommended. *
+********************************************************************************
+EOF
+		exit 1
+	else
+		export PATH=/opt/kernel-gcc/bin:$PATH
+	fi
+
+	tar -xvf "$OWD/$NAME-$VERSION.tar.xz" || exit 1
+	cd $NAME-$VERSION || exit 1
+
+	# Prepare the source tree for the build
+	make mrproper || exit 1
+
+	# Copy over the appropriate config
+	cp "$OWD/config-$CUCARCH" .config || exit 1
+
+	# Do the actual build, using kernel_gcc to mitigate against Spectre v2
+	make -j $MAXJOBS || make || exit 1
+
+	# Install the modules
+	mkdir -pv $DESTDIR/lib/modules/$VERSION
+	make modules_install INSTALL_MOD_PATH=$DESTDIR
+
+	# Fix some misdirected symlinks. These will be provided by the
+	# linux-source package in the event that something needs them.
+	rm -v $DESTDIR/lib/modules/$VERSION*/{build,source} || exit 1
+
+	# Copy over the kernel
+	mkdir -pv $DESTDIR/boot
+	cp -v arch/x86/boot/bzImage $DESTDIR/boot/vmlinuz-$VERSION
+	cp -v System.map $DESTDIR/boot/System.map-$VERSION
+	cp -v .config $DESTDIR/boot/config-$VERSION
+	ln -s vmlinuz-$VERSION $DESTDIR/boot/vmlinuz
+
+	# Install the documentation
+	install -d $DESTDIR/usr/share/doc/linux-$VERSION
+	cp -r Documentation/* $DESTDIR/usr/share/doc/linux-$VERSION
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+	# Add lines to doinst.sh to update any existing EFI configuration
+	cat >> $DESTDIR/install/doinst.sh << EOF
+if [ -e \$ROOT/boot/efi/EFI/cucumber/vmlinuz.efi ]; then
+	rm \$ROOT/boot/efi/EFI/cucumber/vmlinuz.efi
+	cp \$ROOT/boot/vmlinuz-$VERSION \$ROOT/boot/efi/EFI/cucumber/vmlinuz.efi
+fi
+EOF
+
+}
+
