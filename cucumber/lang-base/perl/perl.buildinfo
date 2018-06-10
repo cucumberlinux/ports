@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Copyright 2016 Scott Court
+# Copyright 2018 Zach Jorgensen
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -65,7 +66,7 @@ build () {
 		-Dman3dir=/usr/share/man/man3 \
 		-Dpager="/usr/bin/less -isR"  \
 		-Duseshrplib || exit 1
-	make || exit 1
+	pkgapi_make || exit 1
 	make install DESTDIR=$DESTDIR || exit 1
 
 	unset BUILD_ZLIB BUILD_BZIP2
