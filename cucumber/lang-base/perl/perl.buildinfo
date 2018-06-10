@@ -1,0 +1,82 @@
+#!/bin/bash
+
+# Copyright 2016 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for perl
+
+NAME=perl
+VERSION=5.26.1
+URL=(https://www.cpan.org/src/5.0/perl-5.26.2.tar.gz)
+BUILDDEPS=()
+
+build () {
+
+	tar -xf "$OWD/$NAME-$VERSION.tar.bz2" || exit 1
+	cd $NAME-$VERSION || exit 1
+
+	#  This version of Perl now builds the Compress::Raw::Zlib and Compress::Raw::BZip2 modules. By default Perl will use an internal copy of the sources for the build. Issue the following command so that Perl will use the libraries installed on the system:
+	export BUILD_ZLIB=False
+	export BUILD_BZIP2=0
+
+	# Perl Multilib Patch
+	# Make Perl use lib64 instead of lib
+	if [ "$CUCARCH" = "x86_64" ]; then
+		# adopted from Slackware (which adopted it from "Cross Linux From Scratch")
+		# Configure must be told to also use lib64:
+		zcat $OWD/perl.configure.multilib.patch.gz | patch -p1 --verbose || exit 1
+		# "perl -V" should report that libc is in /lib64
+		sed -i -e '/libc/s#/lib/#/lib64/#' hints/linux.sh
+		# make perl use lib64:
+		echo 'installstyle="lib64/perl5"' >>hints/linux.sh
+	fi
+
+	# Apply an other patches
+	for patch in $(ls $OWD/patches); do
+		patch -p1 < $OWD/patches/$patch || exit 1
+	done
+
+	# Apply any patches located in $OWD/patches
+	pkgapi_apply_patches || exit 1
+
+	# Do the actual build
+	sh Configure -des \
+		-Dprefix=/usr \
+		-Dvendorprefix=/usr \
+		-Dlibpth="/usr/local/lib${LIBDIRSUFFIX} /lib${LIBDIRSUFFIX} /usr/lib${LIBDIRSUFFIX}" \
+		-Dman1dir=/usr/share/man/man1 \
+		-Dman3dir=/usr/share/man/man3 \
+		-Dpager="/usr/bin/less -isR"  \
+		-Duseshrplib || exit 1
+	make || exit 1
+	make install DESTDIR=$DESTDIR || exit 1
+
+	unset BUILD_ZLIB BUILD_BZIP2
+
+	# Strip all of the binaries and libraries in $DESTDIR/ of their
+	# debugging symbols.
+	pkgapi_strip
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+}
+
