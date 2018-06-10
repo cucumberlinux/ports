@@ -30,7 +30,7 @@ BUILDDEPS=()
 
 build () {
 
-	tar -xf "$OWD/$NAME-$VERSION.tar.bz2" || exit 1
+	tar -xf "$OWD/$NAME-$VERSION.tar.gz" || exit 1
 	cd $NAME-$VERSION || exit 1
 
 	#  This version of Perl now builds the Compress::Raw::Zlib and Compress::Raw::BZip2 modules. By default Perl will use an internal copy of the sources for the build. Issue the following command so that Perl will use the libraries installed on the system:
