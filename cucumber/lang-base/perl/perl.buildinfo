@@ -24,8 +24,8 @@
 # Cucumber Linux Buildinfo for perl
 
 NAME=perl
-VERSION=5.26.1
-URL=(https://www.cpan.org/src/5.0/perl-5.26.2.tar.gz)
+VERSION=5.26.2
+URL=(http://www.cpan.org/src/5.0/$NAME-$VERSION.tar.gz)
 BUILDDEPS=()
 
 build () {
@@ -48,11 +48,6 @@ build () {
 		# make perl use lib64:
 		echo 'installstyle="lib64/perl5"' >>hints/linux.sh
 	fi
-
-	# Apply an other patches
-	for patch in $(ls $OWD/patches); do
-		patch -p1 < $OWD/patches/$patch || exit 1
-	done
 
 	# Apply any patches located in $OWD/patches
 	pkgapi_apply_patches || exit 1
