@@ -49,8 +49,8 @@ build () {
 	GCC_MINOR_VERSION=$(echo $GCC_VERSION | cut -d . -f 2)
 	if [[ $GCC_MAJOR_VERSION -ge 9 || ( $GCC_MAJOR_VERSION -eq 8 && $GCC_MINOR_VERSION -ge 1 ) || ( $GCC_MAJOR_VERSION -eq 7 && $GCC_MINOR_VERSION -ge 3 ) ]]; then
 		cat << EOF
-Building the Linux kernel with full Spectre v2 (CVE-2017-5715) using the
-retpoline aware system compiler (GCC $GCC_VERSION).
+Building the Linux kernel with full Spectre v2 (CVE-2017-5715) mitigation using
+the retpoline aware system compiler (GCC $GCC_VERSION).
 EOF
 	elif [ "$MITIGATE_SPECTRE" = "FALSE" ]; then
 		cat << EOF
