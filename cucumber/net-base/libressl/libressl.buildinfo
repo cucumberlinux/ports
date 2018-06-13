@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for libressl
 
 NAME=libressl
-VERSION=2.7.3
+VERSION=2.7.4
 URL=(https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/$NAME-$VERSION.tar.gz https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/$NAME-$VERSION.tar.gz.asc)
 BUILDDEPS=()
 
