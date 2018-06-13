@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for procps-ng
 
 NAME=procps-ng
-VERSION=3.3.14
+VERSION=3.3.15
 URL=(https://sourceforge.net/projects/$NAME/files/Production/$NAME-$VERSION.tar.xz)
 BUILDDEPS=()
 
