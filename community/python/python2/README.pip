@@ -1,0 +1,7 @@
+Python2 does not like building pip. It is very picky about when it will build
+pip; if all the conditions are not exactly right, it will not build pip. Here
+are the necessary conditions:
+
+    1. 	Pip must NOT already be installed for Python2. if Pip is installed on
+	the system already, the Python build system will decide there's no need
+	to build it again and will skip it.
