@@ -37,7 +37,6 @@ verify () {
         pkgapi_gpg --verify $TARNAME-$VERSION.tar.xz.asc || return 1
 }
 
-
 build () {
 
 	tar -xf "$OWD/$TARNAME-$VERSION.tar.xz" || exit 1
