@@ -264,7 +264,7 @@ TARNAME=${TARNAME:-$NAME}
 BUILD=${BUILD:-1}
 export TAG=
 # Make MAXJOBS default to the number of CPUs
-export MAXJOBS=${MAXJOBS:-$(egrep "processor[[:blank:]]:" /proc/cpuinfo | wc | awk '{ print $1 }')}
+export MAXJOBS=${MAXJOBS:-$(nproc)}
 
 case $1 in
 	download)	drv_download ;;

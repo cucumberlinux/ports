@@ -268,7 +268,7 @@ source $OWD/${BASENAME}.buildinfo
 TARNAME=${TARNAME:-$NAME}
 BUILD=${BUILD:-1}
 # Make MAXJOBS default to the number of CPUs
-MAXJOBS=${MAXJOBS:-$(egrep "processor[[:blank:]]:" /proc/cpuinfo | wc | awk '{ print $1 }')}
+MAXJOBS=${MAXJOBS:-$(nproc)}
 
 case $1 in
 	download)	drv_download ;;
