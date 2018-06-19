@@ -1,0 +1,89 @@
+#!/bin/bash
+
+# Copyright 2016 - 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for python3
+
+NAME=python3
+TARNAME=Python
+VERSION=3.7.0rc1
+MINOR_VERSION=3.7
+# Development Version URL - Delete when switching to the stable release.
+URL=(https://www.python.org/ftp/python/3.7.0/$TARNAME-$VERSION.tar.xz https://www.python.org/ftp/python/3.7.0/$TARNAME-$VERSION.tar.xz.asc)
+# Real URL - Uncomment when upgrading to the final 3.7.0 release, and delete
+# the above line.
+#URL=(https://www.python.org/ftp/python/$VERSION/$TARNAME-$VERSION.tar.xz https://www.python.org/ftp/python/$VERSION/$TARNAME-$VERSION.tar.xz.asc)
+BUILDDEPS=(libffi)
+
+verify () {
+        pkgapi_gpg --verify $TARNAME-$VERSION.tar.xz.asc || return 1
+}
+
+
+build () {
+
+	tar -xf "$OWD/$TARNAME-$VERSION.tar.xz" || exit 1
+	cd $TARNAME-$VERSION || exit 1
+
+	# Apply any patches located in $OWD/patches
+	pkgapi_apply_patches || exit 1
+
+	# Do the actual build
+	./configure \
+		--prefix=/usr \
+		--libdir=/usr/lib${LIBDIRSUFFIX} \
+		--sysconfdir=/etc \
+		--localstatedir=/var \
+		--enable-shared \
+		--with-system-expat \
+		--with-system-ffi \
+		--enable-unicode=ucs4 \
+		--build=$CUCARCH-cucumber-linux || exit 1
+	pkgapi_make || exit 1
+	make install DESTDIR=$DESTDIR || exit 1
+	chmod -v 755 $DESTDIR/usr/lib/libpython${MINOR_VERSION}m.so 
+	chmod -v 755 $DESTDIR/usr/lib/libpython3.so
+
+	if [ ! -z $LIBDIRSUFFIX ]; then
+		mv $DESTDIR/usr/lib${LIBDIRSUFFIX}/python${MINOR_VERSION}/* $DESTDIR/usr/lib/python${MINOR_VERSION}/
+		rmdir $DESTDIR/usr/lib${LIBDIRSUFFIX}/python${MINOR_VERSION}
+		ln -s ../lib/python${MINOR_VERSION} $DESTDIR/usr/lib${LIBDIRSUFFIX}/python${MINOR_VERSION}
+	fi
+
+	# Install the documentation
+	install -v -dm755 /usr/share/doc/python-$VERSION/html &&
+		tar --strip-components=1 \
+		--no-same-owner \
+		--no-same-permissions \
+		-C $DESTDIR/usr/share/doc/python-$VERSION/html \
+		-xvf ../python-$VERSION-docs-html.tar.bz2
+	ln -svfn python-$VERSION /usr/share/doc/python-3
+
+	# Strip all of the binaries and libraries in $DESTDIR/ of their
+	# debugging symbols.
+	pkgapi_strip
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+}
+
