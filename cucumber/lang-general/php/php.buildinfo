@@ -1,0 +1,139 @@
+#!/bin/bash
+
+# Copyright 2016, 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for php
+
+NAME=php
+VERSION=7.3.0alpha1
+# Development Version URL - Delete when switching to the stable release.
+URL=(https://downloads.php.net/~stas/$NAME-$VERSION.tar.xz https://downloads.php.net/~stas/$NAME-$VERSION.tar.xz.asc https://mirror.cucumberlinux.com/package_sources/php/7.3/php_manual_en.tar.gz) 
+# Real URL - Uncomment when upgrading to the stable release, and delete the
+# above line.
+#URL=(http://www.php.net/distributions/$NAME-$VERSION.tar.xz http://www.php.net/distributions/$NAME-$VERSION.tar.xz.asc https://mirror.cucumberlinux.com/package_sources/php/7.3/php_manual_en.tar.gz)
+BUILDDEPS=(libxml2)
+
+verify () {
+	# Uncomment once the PHP 7.3 release keys become available and are
+	# placed in ./autorized_keys.
+        #pkgapi_gpg --verify $NAME-$VERSION.tar.xz.asc || return 1
+	true
+}
+
+build () {
+
+	tar -xf "$OWD/$NAME-$VERSION.tar.xz" || exit 1
+	cd $NAME-$VERSION || exit 1
+
+	# Enable the tidyhtml5 library
+	sed -i 's/buffio.h/tidy&/' ext/tidy/*.c
+
+	# Apply any patches located in $OWD/patches
+	pkgapi_apply_patches || exit 1
+
+	# Do the actual build
+	./configure \
+		--prefix=/usr \
+		--libdir=/usr/lib${LIBDIRSUFFIX} \
+		--sysconfdir=/etc \
+		--localstatedir=/var \
+		--datadir=/usr/share/php     \
+		--mandir=/usr/share/man      \
+		--enable-fpm                      \
+		--with-fpm-user=apache            \
+		--with-fpm-group=apache           \
+		--with-config-file-path=/etc      \
+		--with-openssl                    \
+		--with-zlib                       \
+		--enable-bcmath                   \
+		--with-bz2                        \
+		--enable-calendar                 \
+		--with-curl                       \
+		--enable-inifile                  \
+		--enable-flatfile                 \
+		--enable-exif                     \
+		--enable-ftp                      \
+		--with-openssl-dir=/usr           \
+		--with-zlib-dir=/usr              \
+		--with-freetype-dir=/usr          \
+		--with-gettext                    \
+		--with-gmp                        \
+		--enable-mbstring                 \
+		--with-mysql=mysqlnd              \
+		--with-mysqli=mysqlnd             \
+		--with-mysql-sock=/var/run/mysqld/mysqld.sock \
+		--with-pdo-mysql                  \
+		--with-pdo-sqlite                 \
+		--with-readline                   \
+		--enable-sockets                  \
+		--build=$CUCARCH-cucumber-linux || exit 1
+	pkgapi_make || exit 1
+	make install INSTALL_ROOT=$DESTDIR || exit 1
+	install -v -m644 php.ini-production $DESTDIR/etc/php.ini.new
+	sed -i 's@php/includes"@&\ninclude_path = ".:/usr/lib/php"@' $DESTDIR/etc/php.ini.new
+	mv $DESTDIR/etc/pear.conf $DESTDIR/etc/pear.conf.new
+
+	# Move the PHP-FPM config file. The location of this was moved from /etc/php-fpm.conf to
+	# /etc/php-fpm.d/www.conf between PHP 5.6 and PHP 7.2. We'll update this buildscript to use that new
+	# location and add a warning to the old one
+	cp -v $DESTDIR/etc/php-fpm.d/www.conf.default $DESTDIR/etc/php-fpm.d/www.conf.new
+	install -m 644 $DESTDIR/etc/php-fpm.conf.new
+	cat > $DESTDIR/etc/php-fpm.conf.new << EOF
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;        THE PHP-FPM CONFIGURATION LOCATION HAS MOVED         ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+; As of PHP 7.2, the bulk of the php-fpm configuration is now
+; stored in the /etc/php-fpm.d directory by default (this is a
+; change from PHP 5.6). The php-fpm daemon requires the
+; presence of at least the www.conf file in this directory and
+; uses the .conf files in that directory in addition to this
+; one. 
+
+EOF
+	cat $DESTDIR/etc/php-fpm.conf.default >> $DESTDIR/etc/php-fpm.conf.new 
+	cp $DESTDIR/etc/php-fpm.conf.new $DESTDIR/etc/php-fpm.conf.default 
+
+	# Install Documentation
+	install -v -m755 -d /usr/share/doc/php-$VERSION 
+	install -v -m644    CODING_STANDARDS EXTENSIONS INSTALL NEWS README* UPGRADING* php.gif $DESTDIR/usr/share/doc/php-$VERSION &&
+	ln -v -sfn          /usr/lib/php/doc/Archive_Tar/docs/Archive_Tar.txt $DESTDIR/usr/share/doc/php-$VERSION 
+	ln -v -sfn          /usr/lib/php/doc/Structures_Graph/docs $DESTDIR/usr/share/doc/php-$VERSION
+	tar -xvf $OWD/php_manual_en.tar.gz -C /usr/share/doc/php-$VERSION --no-same-owner
+
+	# PHP sometimes puts junk in the root directory:
+	( cd $DESTDIR
+	  rm -rf .channels .depdb .depdblock .filemap .lock .registry
+	)
+
+	# Strip all of the binaries and libraries in $DESTDIR/ of their
+	# debugging symbols.
+	pkgapi_strip
+
+	# Install the init script
+	mkdir -pv $DESTDIR/etc/rc.d/init.d/
+	install -m 755 $OWD/php-fpm $DESTDIR/etc/rc.d/init.d/ || exit 1
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+}
+
