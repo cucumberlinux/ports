@@ -1,0 +1,86 @@
+#!/bin/bash
+
+# Copyright 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+######################## READ BEFORE EDITING THIS FILE #########################
+# You probably should not ever need to edit this file. The only time this file #
+#  should be edited is when maintaining the buildsystem as a whole. This file  #
+#                should NEVER be edited when creating a package.               #
+################################################################################
+
+# Driver Version
+DRV_VERSION=0.0.0
+
+BASENAME=$( basename $0 | rev | cut -d . -f 2- | rev )
+
+# Lists the build time dependencies for this package
+drv_builddeps () {
+	if [ -f $OWD/packages ]; then
+		egrep -v '^#' $OWD/packages 
+	fi
+}
+
+# Builds the package
+drv_build () {
+	cat << EOF
+$BASENAME is a meta package. This means it will trigger building
+several other packages when it is build using either 'portmake build-recursive'
+or 'portmake install'. For a list of which packages will be built, run:
+$0 builddeps
+EOF
+}
+
+# Displays the help message
+drv_help () {
+	cat << EOF
+Cucumber Linux Build System Driver for meta packages.
+Driver Version: $DRV_VERSION
+
+This driver doesn't build any packages; rather, it lists a series of other
+packages as build dependencies. This allows this package to be used by portmake
+to trigger the building of several other packages. When this package is built
+with portmake, all of its dependencies will be built and installed.
+
+It allows for different tasks to be done depending on what the first argument
+to the script is. It supports the following arguments:
+
+  * builddeps - Lists the packages that will be built by portmake when
+    "building" this package.
+  * help - Displays this message.
+
+This file should be the same for every single package. This allows us to make
+global package changes by editing this one file. In other words you should
+probably not be editing this file.
+EOF
+}
+
+# Save the Original Working Directory
+OWD=$(realpath $(dirname $0))
+
+case $1 in
+	download)	exit ;;
+	verify)		exit ;;
+	builddeps)	drv_builddeps ;;
+	build|"")	drv_build ;;
+	help)		drv_help ;;
+	*)		echo "Unsupported action. Use \`$0 help\` for a list of supported actions." ;;
+esac
+

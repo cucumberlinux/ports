@@ -1,0 +1,24 @@
+                   Cucumber Linux Metapackage Documentation
+
+Contents:
+  1. Purpose
+  2. Usage
+
+§1. Purpose
+
+Metapackages exist to trigger the building of several other packages; when a
+metapackage is built using portmake, it will cause portmake to build these other
+packages.
+
+§2. Usage
+
+Metapackages make use of the metapackage buildscript driver, found at
+utilities/drivers/metapackage.buildscript. This driver does nothing except list
+build time dependencies. These build time dependencies are the packages that
+will be built when building the metapackage.
+
+Build time dependencies should be listed in a file called 'packages' in the same
+directory as the buildscript. Dependencies should be listed in order, separated
+by any kind of whitespace. Lines beginning with a # will be ignored, allowing
+for comments.
+
