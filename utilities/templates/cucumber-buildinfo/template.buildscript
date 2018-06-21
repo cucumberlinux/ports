@@ -108,8 +108,8 @@ BASENAME=$( basename $0 | rev | cut -d . -f 2- | rev )
 # Downloads the source for this package
 drv_download () {
 	if [ -z "$URL" ]; then
-		echo "Error downloading source for $BASENAME: no URL is present in ${BASENAME}.buildinfo"
-		exit 2
+		echo "Warning downloading source for $BASENAME: no URL is present in ${BASENAME}.buildinfo"
+		return
 	fi
 
 	pushd $OWD
