@@ -1,0 +1,96 @@
+#!/bin/sh
+########################################################################
+# Begin sshd
+#
+# Description : Starts the secure shell (SSH) server
+#
+# Authors     : Scott Court (Z5T1@Z5T1.com)
+#               Based a modified version of the rc.sshd script by
+#                 Patrick J. Volkerding's (volkerdi@slackware.com)
+#
+# Version     : Cucumber 1.0
+#
+########################################################################
+
+### BEGIN SYMLINK INFO
+# This section controls the name of the symlinks that are created in
+# /etc/rc.d/rc?.d by chkconfig and the system init setup script.
+# START_LINK_NAME	S55sshd
+# KILL_LINK_NAME	K25sshd
+### END SYMLINK INFO
+
+### BEGIN INIT INFO
+# Provides:		sshd
+# Default-Start: 345
+# Default-Stop: 0126
+### END INIT INFO
+
+. /lib/lsb/init-functions
+
+sshd_start() {
+  # Create host keys if needed.
+  if [ ! -f /etc/ssh/ssh_host_dsa_key ]; then
+    /usr/bin/ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ''
+  fi
+  if [ ! -f /etc/ssh/ssh_host_rsa_key ]; then
+    /usr/bin/ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
+  fi
+  if [ ! -f /etc/ssh/ssh_host_ecdsa_key ]; then
+    /usr/bin/ssh-keygen -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key -N ''
+  fi
+  if [ ! -f /etc/ssh/ssh_host_ed25519_key ]; then
+    /usr/bin/ssh-keygen -t ed25519 -f /etc/ssh/ssh_host_ed25519_key -N ''
+  fi
+  # Catch any new host key types not yet created above:
+  /usr/bin/ssh-keygen -A
+  # Start the sshd daemon:
+  /usr/sbin/sshd
+}
+
+sshd_stop() {
+  killall -q /usr/sbin/sshd
+  return 0
+}
+
+sshd_restart() {
+  if [ -r /var/run/sshd.pid ]; then
+    echo
+    echo "WARNING: killing listener process only.  To kill every sshd process, you must"
+    echo "         use 'sshd stop'.  'sshd restart' kills only the parent sshd to"
+    echo "         allow an admin logged in through sshd to use 'sshd restart' without"
+    echo "         being cut off.  If sshd has been upgraded, new connections will now"
+    echo "         use the new version, which should be a safe enough approach."
+    kill `cat /var/run/sshd.pid`
+  else
+    echo "WARNING: There does not appear to be a parent instance of sshd running."
+    echo "         If you really want to kill all running instances of sshd (including"
+    echo "         any sessions currently in use), run 'sshd stop' instead."
+    return 1
+  fi
+  sleep 1
+  sshd_start
+}
+
+case "$1" in
+   start)
+      log_info_msg "Starting sshd"
+      sshd_start
+      evaluate_retval
+      ;;
+   stop)
+      log_info_msg "Stopping sshd"
+      sshd_stop
+      evaluate_retval
+      ;;
+   restart)
+      log_info_msg "Restarting sshd"
+      sshd_restart
+      evaluate_retval
+      ;;
+   status)
+      statusproc /usr/sbin/sshd
+      ;;
+   *)
+      echo "usage $0 start|stop|restart"
+esac
+
