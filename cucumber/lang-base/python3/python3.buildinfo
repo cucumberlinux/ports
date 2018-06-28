@@ -24,13 +24,9 @@
 
 NAME=python3
 TARNAME=Python
-VERSION=3.7.0rc1
-MINOR_VERSION=3.7
-# Development Version URL - Delete when switching to the stable release.
-URL=(https://www.python.org/ftp/python/3.7.0/$TARNAME-$VERSION.tar.xz https://www.python.org/ftp/python/3.7.0/$TARNAME-$VERSION.tar.xz.asc)
-# Real URL - Uncomment when upgrading to the final 3.7.0 release, and delete
-# the above line.
-#URL=(https://www.python.org/ftp/python/$VERSION/$TARNAME-$VERSION.tar.xz https://www.python.org/ftp/python/$VERSION/$TARNAME-$VERSION.tar.xz.asc)
+VERSION=3.7.0
+MINOR_VERSION=$(echo $VERSION | cut -d . -f 1-2)
+URL=(https://www.python.org/ftp/python/$VERSION/$TARNAME-$VERSION.tar.xz https://www.python.org/ftp/python/$VERSION/$TARNAME-$VERSION.tar.xz.asc)
 BUILDDEPS=(libffi)
 
 verify () {
