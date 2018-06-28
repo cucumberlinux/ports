@@ -1,0 +1,67 @@
+#!/bin/bash
+
+# Copyright 2016, 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for p7zip
+
+NAME=p7zip
+VERSION=16.02
+URL=(https://downloads.sourceforge.net/$NAME/${NAME}_${VERSION}_src_all.tar.bz2)
+BUILDDEPS=()
+
+build () {
+
+	tar -xf "$OWD/${NAME}_${VERSION}_src_all.tar.bz2" || exit 1
+	cd ${NAME}_${VERSION} || exit 1
+
+	# Apply any patches
+	pkgapi_apply_patches || exit 1
+
+	# Do the actual build
+	sed -i -e 's/chmod 555/chmod 755/' -e 's/chmod 444/chmod 644/' install.sh
+	pkgapi_make all3 \
+		DEST_HOME=/usr \
+		DEST_MAN=/usr/share/man \
+		DEST_SHARE_DOC=/usr/share/doc/p7zip-$VERSION \
+		DEST_SHARE=/usr/lib$LIBDIRSUFFIX/p7zip \
+		DEST_DIR=$DESTDIR || exit 1
+	make install \
+		DEST_HOME=/usr \
+		DEST_MAN=/usr/share/man/p7zip-$VERSION \
+		DEST_SHARE_DOC=/usr/share/doc/p7zip-$VERSION \
+		DEST_SHARE=/usr/lib$LIBDIRSUFFIX/p7zip \
+		DEST_DIR=$DESTDIR \
+	DESTDIR=$DESTDIR || exit 1
+
+	# Install the man pages
+	install -d $DESTDIR/usr/share/man/man1
+	install -o root -g root man1/* $DESTDIR/usr/share/man/man1 || exit 1
+
+	# Strip all of the binaries and libraries in $DESTDIR/ of their
+	# debugging symbols.
+	pkgapi_strip
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+}
+
