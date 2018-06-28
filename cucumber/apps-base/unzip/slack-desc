@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+     |-----handy-ruler------------------------------------------------------|
+unzip: The UnZip package contains ZIP extraction utilities. These are useful
+unzip: for extracting files from ZIP archives. ZIP archives are created with
+unzip: PKZIP or Info-ZIP utilities, primarily in a DOS environment. 
+unzip:
+unzip: http://downloads.sourceforge.net/infozip
+unzip:
+unzip:
+unzip:
+unzip:
+unzip:
+unzip:
