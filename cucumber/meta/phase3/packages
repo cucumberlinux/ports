@@ -17,4 +17,9 @@ p7zip
 unrar
 unzip
 zip
+libffi
+iputils
+dhcpcd
+bind-client
+whois
 
