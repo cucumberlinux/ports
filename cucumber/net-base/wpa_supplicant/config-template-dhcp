@@ -1,0 +1,34 @@
+# Network interface configuration file template for wpa with dhcp chainlading
+
+# Controls whether this interface should be started automatically on boot
+ONBOOT=no
+
+# The method to use to configure this interface. For a complete list of 
+# available methods see /etc/network/methods
+METHOD=wireless-wpa
+
+###### Begin WPA Method Specific Configuration #####
+
+# The SSID of the network to connect to. To scan for a list of available 
+# networks, use 'iwlist <interface> scan'
+WPA_SSID=
+
+# The WPA passphrase for this network. If it contains any quotes be
+# sure to escape them.
+WPA_PASSPHRASE=
+
+# An additional configuration method to chainload after connecting to the 
+# network.
+WPA_CHAINLOAD=dhcp
+
+###### End WPA Method Specific Configuration #####
+
+###### Begin DHCP Method Specific Configuration #####
+
+# Additional arguments to pass to dhcpcd when bringing the interface up
+# (optional).
+START_ARGS=
+
+# Additional arguments to pass to dhcpcd when bringing the interface down
+# (optional).
+STOP_ARGS=

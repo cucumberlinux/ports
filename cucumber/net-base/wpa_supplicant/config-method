@@ -1,0 +1,73 @@
+#!/bin/bash
+
+iface_up () {
+	# Check for a running wpa_supplicant process
+	if [ -e /run/wpa-${INTERFACE}.pid ]; then
+		kill $(cat /run/wpa-${INTERFACE}.pid) > /dev/null 2> /dev/null
+		rm /run/wpa-${INTERFACE}.pid 
+	fi
+
+	# Configure the interface
+	ifconfig $INTERFACE up
+	wpa_passphrase "$WPA_SSID" "$WPA_PASSPHRASE" > /tmp/wpa_creds
+	wpa_supplicant -B -P /run/wpa-${INTERFACE}.pid -s -i $INTERFACE -c /tmp/wpa_creds 
+	rm /tmp/wpa_creds
+
+	# Chainloading
+	if [ ! -z $WPA_CHAINLOAD ]; then
+		. /etc/network/methods/${WPA_CHAINLOAD} up
+	fi
+}
+
+iface_down () {
+	# Chainloading
+	if [ ! -z $WPA_CHAINLOAD ]; then
+		. /etc/network/methods/${WPA_CHAINLOAD} down
+	fi
+
+	# Check for a running wpa_supplicant process
+	if [ -e /run/wpa-${INTERFACE}.pid ]; then
+		kill $(cat /run/wpa-${INTERFACE}.pid)
+		rm /run/wpa-${INTERFACE}.pid 
+	fi
+
+	ifconfig $INTERFACE down
+}
+
+iface_help () {
+	cat << EOF
+WPA Configuration Help
+
+This configuration method configures a wireless network interface to connect to
+a WPA secured network. 
+
+This method does not handle the addressing portion of the configuration. For
+this reason, an additional network configuration method may be chainloaded. 
+See the templates in /etc/network/templates for an example of how to do this.
+
+This configuration method permits the following optional fields in the
+configuration file: 
+WPA_SSID        The SSID of the network to connect to. To scan for a list of
+                available networks, use 'iwlist <interface> scan'.
+WPA_PASSPRASE   The WPA passphrase for this network.
+WPA_CHAINLOAD   An additional configuration method to chainload after
+                connecting to the network.
+
+See /etc/network/templates/ for wpa configuration templates.
+EOF
+}
+
+case $1 in
+	"up")
+		iface_up
+		;;
+	"down")
+		iface_down
+		;;
+	"help")
+		iface_help
+		;;
+	*)
+		echo "Usage: $1 <up|down|help>"
+		exit 1
+esac

@@ -1,0 +1,39 @@
+# Network interface configuration file template for wpa with dhcp chainlading
+
+# Controls whether this interface should be started automatically on boot
+ONBOOT=no
+
+# The method to use to configure this interface. For a complete list of 
+# available methods see /etc/network/methods
+METHOD=wireless-wpa
+
+###### Begin WPA Method Specific Configuration #####
+
+# The SSID of the network to connect to. To scan for a list of available 
+# networks, use 'iwlist <interface> scan'
+WPA_SSID=
+
+# The WPA passphrase for this network. If it contains any quotes be
+# sure to escape them.
+WPA_PASSPHRASE=
+
+# An additional configuration method to chainload after connecting to the 
+# network.
+WPA_CHAINLOAD=static
+
+###### End WPA Method Specific Configuration #####
+
+###### Begin Static Method Specific Configuration #####
+
+# The IP address to use for the interface (mandatory).
+ADDRESS=192.0.2.2
+
+# The netmask for the interface (optional). If this field is not explicitly
+# specified, the classful subnet mask will be used.
+NETMASK=255.255.255.0
+
+# The broadcast address for the interface (optional).
+BROADCAST=192.0.2.255
+
+# The default gateway for the interface (optional).
+GATEWAY=192.0.2.1
