@@ -1,0 +1,31 @@
+# Network interface configuration file template for wireless with dhcp 
+# chainlading.
+
+# Controls whether this interface should be started automatically on boot
+ONBOOT=no
+
+# The method to use to configure this interface. For a complete list of 
+# available methods see /etc/network/methods
+METHOD=wireless
+
+###### Begin WIRELESS Method Specific Configuration #####
+
+# The SSID of the network to connect to. To scan for a list of available 
+# networks, use 'iwlist <interface> scan'
+WIRELESS_SSID=
+
+# An additional configuration method to chainload after connecting to the 
+# network.
+WIRELESS_CHAINLOAD=dhcp
+
+###### End Wireless Method Specific Configuration #####
+
+###### Begin DHCP Method Specific Configuration #####
+
+# Additional arguments to pass to dhcpcd when bringing the interface up
+# (optional).
+START_ARGS=
+
+# Additional arguments to pass to dhcpcd when bringing the interface down
+# (optional).
+STOP_ARGS=
