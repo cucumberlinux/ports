@@ -1,0 +1,105 @@
+#!/bin/bash
+
+# Copyright 2016, 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for iputils
+
+NAME=iputils
+VERSION=s20161105
+URL=(https://github.com/$NAME/$NAME/archive/$VERSION.tar.gz)
+BUILDDEPS=()
+
+build () {
+
+	tar -xf "$OWD/$VERSION.tar.gz" || exit 1
+	cd $NAME-$VERSION || exit 1
+
+	# Apply any patches located in $OWD/patches
+	pkgapi_apply_patches || exit 1
+
+	# Do the actual build
+	pkgapi_make \
+		USE_IDN=no \
+		USE_CAP=no \
+		VPATH=/usr/lib${LIBDIRSUFFIX} \
+		USE_GNUTLS=no || exit 1
+	# Building the documentation requires the whole Linuxdoc-tools suite,
+	# which is rediculous. We'll make do without the man pages.
+	#( cd doc ; make man || exit 1 ) || exit 1
+
+	cd ninfod
+	./configure \
+		--prefix=/usr \
+		--libdir=/usr/lib${LIBDIRSUFFIX} \
+		--sysconfdir=/etc \
+		--localstatedir=/var \
+		--disable-static \
+		--build=$CUCARCH-cucumber-linux || exit 1
+	pkgapi_make || exit 1
+	cd ..
+
+	# Install
+	mkdir -p $DESTDIR/sbin
+	cat arping > $DESTDIR/sbin/arping
+	chmod 755 $DESTDIR/sbin/arping
+	mkdir -p $DESTDIR/usr/sbin
+	cat clockdiff > $DESTDIR/usr/sbin/clockdiff
+	chmod 755 $DESTDIR/usr/sbin/clockdiff
+	cat ninfod/ninfod > $DESTDIR/usr/sbin/ninfod
+	chmod 755 $DESTDIR/usr/sbin/ninfod
+	mkdir -p $DESTDIR/bin
+	cat ping > $DESTDIR/bin/ping
+	ln -s ping $DESTDIR/bin/ping6
+	chmod 4711 $DESTDIR/bin/ping
+	cat rarpd > $DESTDIR/usr/sbin/rarpd
+	cat rdisc > $DESTDIR/usr/sbin/rdisc
+	chmod 755 $DESTDIR/usr/sbin/rarpd $DESTDIR/usr/sbin/rdisc
+	mkdir -p $DESTDIR/usr/bin
+	cat tracepath > $DESTDIR/usr/bin/tracepath
+	cat tracepath6 > $DESTDIR/usr/bin/tracepath6
+	cat traceroute6 > $DESTDIR/usr/bin/traceroute6
+	chmod 755 $DESTDIR/usr/bin/tracepath*
+	chmod 4711 $DESTDIR/usr/bin/traceroute6
+
+	# Install the prebuilt man pages
+	mkdir -p $DESTDIR/usr/share/man/man8
+	( cd $OWD/man-pages
+		for file in $(ls); do
+			cat $file > $DESTDIR/usr/share/man/man8/$file || exit 1
+		done
+	) || exit 1
+
+	mkdir -p $DESTDIR/usr/share/doc/iputils-$VERSION
+	cp -a \
+		RELNOTES \
+		$DESTDIR/usr/share/doc/iputils-$VERSION
+	chmod 644 $DESTDIR/usr/share/doc/iputils-$VERSION/*
+
+	# Strip all of the binaries and libraries in $DESTDIR/ of their
+	# debugging symbols.
+	pkgapi_strip
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+}
+
