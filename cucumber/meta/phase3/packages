@@ -22,4 +22,9 @@ iputils
 dhcpcd
 bind-client
 whois
+git
+linux-firmware
+wireless-tools
+libnl
+wpa_supplicant
 
