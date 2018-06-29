@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2016 Scott Court
+# Copyright 2016, 2018 Scott Court
 # Copyright 2018 Zach Jorgensen
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,8 +24,8 @@
 # Cucumber Linux Buildinfo for perl
 
 NAME=perl
-VERSION=5.26.2
-URL=(http://www.cpan.org/src/5.0/$NAME-$VERSION.tar.gz)
+VERSION=5.28.0
+URL=(https://www.cpan.org/src/5.0/$NAME-$VERSION.tar.gz)
 BUILDDEPS=()
 
 build () {
@@ -43,9 +43,10 @@ build () {
 	# Perl Multilib Patch
 	# Make Perl use lib64 instead of lib
 	if [ "$CUCARCH" = "x86_64" ]; then
-		# adopted from Slackware (which adopted it from "Cross Linux From Scratch")
+		# adopted from Slackware (which adopted it from "Cross Linux
+		# From Scratch")
 		# Configure must be told to also use lib64:
-		zcat $OWD/perl.configure.multilib.patch.gz | patch -p1 --verbose || exit 1
+		cat $OWD/perl.configure.multilib.patch | patch -p1 --verbose || exit 1
 		# "perl -V" should report that libc is in /lib64
 		sed -i -e '/libc/s#/lib/#/lib64/#' hints/linux.sh
 		# make perl use lib64:
