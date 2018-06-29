@@ -47,6 +47,7 @@ build () {
 	cd build || exit 1
 	cmake \
 		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=/usr/lib${LIBDIRSUFFIX} \
 	.. || exit 1
 	pkgapi_make || exit 1
