@@ -1,0 +1,24 @@
+# Network interface configuration file template for dhcp
+#
+# This configuration will attempt to configure both ipv4 and ipv6 via
+# DHCP if the network supports it. To configure an interface with DHCP
+# for ipv4 or ipv6 only, see the dhcp4 and dhcp6 templates respectively.
+
+# Controls whether this interface should be started automatically on boot
+ONBOOT=no
+
+# The method to use to configure this interface. For a complete list of 
+# available methods see /etc/network/methods
+METHOD=dhcp
+
+###### Begin DHCP Method Specific Configuration #####
+
+# Additional arguments to pass to dhcpcd when bringing the interface up
+# (optional).
+START_ARGS=
+
+# Additional arguments to pass to dhcpcd when bringing the interface down
+# (optional).
+STOP_ARGS=
+
+###### End DHCP Method Specific Configuration #####

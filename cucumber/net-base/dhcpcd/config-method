@@ -1,0 +1,44 @@
+#!/bin/bash
+
+iface_up () {
+	dhcpcd "$START_ARGS" -b -q $INTERFACE
+	ifconfig $INTERFACE up
+}
+
+iface_down () {
+	dhcpcd "$STOP_ARGS" -k $INTERFACE
+	ifconfig $INTERFACE down
+}
+
+iface_help () {
+	cat << EOF
+DHCP Configuration Help
+
+This configuration method configures a network interface to use a dynamic
+address via dhcpcd. It permits the following optional fields in the
+configuration file: 
+START_ARGS  Additional arguments to pass to dhcpcd when bringing the interface
+            up.
+STOP_ARGS   Additional arguments to pass to dhcpcd when bringing the interface
+            down.
+
+This configuration method provides dhcp for both the address and DNS.
+
+See /etc/network/templates/dhcp for a dhcp configuration template.
+EOF
+}
+
+case $1 in
+	"up")
+		iface_up
+		;;
+	"down")
+		iface_down
+		;;
+	"help")
+		iface_help
+		;;
+	*)
+		echo "Usage: $1 <up|down|help>"
+		exit 1
+esac
