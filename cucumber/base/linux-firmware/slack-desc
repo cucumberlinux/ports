@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+              |-----handy-ruler------------------------------------------------------|
+linux-firmware: linux-firmware (Firmware for the linux)
+linux-firmware:
+linux-firmware: These are firmware files for the Linux linux.
+linux-firmware:
+linux-firmware: You'll need these to use certain hardware drivers with Linux.
+linux-firmware:
+linux-firmware: Upstream site:  
+linux-firmware:
+linux-firmware: git://git.linux.org/pub/scm/linux/linux/git/dwmw2/linux-firmware.git
+linux-firmware:
+linux-firmware:
