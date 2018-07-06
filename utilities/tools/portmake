@@ -89,6 +89,10 @@ download	Download the source tarballs for a package and verify their
 		integrity.
 download-only	Download the source tarballs and stop; do not verify their
 		integrity.
+download-recursive	
+		Download the source tarballs for a package and verify their 
+		integrity. Also recursive download and verify the source
+		tarballs for any dependencies of the package.
 install		Install the package by running build-recursive to build it,
 		rebuilding the package if it is already installed. Additionally
 		install all of its dependencies.
@@ -245,6 +249,16 @@ portmake_download_only () {
 	eval $package_dir/${package}.buildscript download || exit 2
 }
 
+# Download the source tarballs and stop; do not verify their integrity.
+portmake_download_recursive () {
+	portmake_download
+	for dependency in $(eval $package_dir/${package}.buildscript builddeps);
+	do
+		echo $dependency
+		eval $0 download-recursive $dependency || exit 2
+	done
+}
+
 # Install the package like the install option, but only if it is not already
 # installed.
 portmake_install_new () {
@@ -323,7 +337,7 @@ main () {
 	else
 		package=$2
 		for dir in ${ENABLED_REPOSITORIES[*]}; do
-			package_dir=$(find "$PORTS_TREE/$dir" -name $2 -type d)
+			package_dir=$(find "$PORTS_TREE/$dir" -maxdepth 2 -name $2 -type d)
 			if [ ! -z "$package_dir" ]; then break; fi
 		done
 		if [ -z "$package_dir" ]; then
@@ -367,6 +381,9 @@ main () {
 			;;
 		download-only)
 			portmake_download_only
+			;;
+		download-recursive)
+			portmake_download_recursive
 			;;
 		install)
 			portmake_install
