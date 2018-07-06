@@ -25,7 +25,6 @@
 NAME=cacertificates
 VERSION=3.37.3
 URL_DIR_VERSION=$(echo $VERSION | sed -e 's/\./_/g')
-echo $URL_DIR_VERSION
 URL=(https://archive.mozilla.org/pub/security/nss/releases/NSS_${URL_DIR_VERSION}_RTM/src/nss-$VERSION.tar.gz)
 BUILDDEPS=()
 
