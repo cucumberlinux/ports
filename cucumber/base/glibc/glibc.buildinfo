@@ -1,0 +1,131 @@
+#!/bin/bash
+
+# Copyright 2016, 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for glibc
+
+NAME=glibc
+VERSION=2.27
+URL=(https://ftp.gnu.org/gnu/$NAME/$NAME-$VERSION.tar.xz)
+BUILDDEPS=()
+
+build () {
+
+	tar -xf "$OWD/$NAME-$VERSION.tar.xz" || exit 1
+	cd $NAME-$VERSION || exit 1
+
+	# The Glibc documentation recommends building Glibc in a dedicated
+	# build directory: 
+	mkdir -v build
+	cd       build
+
+	# Apply any patches located in $OWD/patches
+	pkgapi_apply_patches || exit 1
+
+	# Do the actual build
+	../configure \
+		--prefix=/usr \
+		--libdir=/usr/lib${LIBDIRSUFFIX} \
+		--sysconfdir=/etc \
+		--localstatedir=/var \
+		--enable-stack-protector=strong \
+		--enable-stackguard-randomization \
+		--disable-profile \
+		--enable-kernel=2.6.32 \
+		--enable-obsolete-rpc \
+		$CUCARCH-cucumber-linux || exit 1
+	pkgapi_make || exit 1
+	make install DESTDIR=$DESTDIR || exit 1
+
+	# Install the configuration file and runtime directory for nscd:
+	cp -v ../nscd/nscd.conf $DESTDIR/etc/nscd.conf.new
+	mkdir -pv $DESTDIR/var/cache/nscd
+
+	# Install a minimalistic set of locales
+	make localedata/install-locales DESTDIR=$DESTDIR
+
+	# The /etc/nsswitch.conf file needs to be created because the Glibc
+	# defaults do not work well in a networked environment.
+	cat > $DESTDIR/etc/nsswitch.conf.new << "EOF"
+#
+# /etc/nsswitch.conf
+#
+# An example Name Service Switch config file. This file should be
+# sorted with the most-used services at the beginning.
+#
+# The entry '[NOTFOUND=return]' means that the search for an
+# entry should stop if the search in the previous entry turned
+# up nothing. Note that if the search failed due to some other reason
+# (like no NIS server responding) then the search continues with the
+# next entry.
+#
+# Legal entries are:
+#
+#      nisplus or nis+         Use NIS+ (NIS version 3)
+#      nis or yp               Use NIS (NIS version 2), also called YP
+#      dns                     Use DNS (Domain Name Service)
+#      files                   Use the local files
+#      [NOTFOUND=return]       Stop searching if not found so far
+#
+
+passwd: files
+group: files
+shadow: files
+
+hosts: files dns
+networks: files
+
+protocols: files
+services: files
+ethers: files
+rpc: files
+
+EOF
+
+	# Create a new file /etc/ld.so.conf
+	cat > $DESTDIR/etc/ld.so.conf.new << "EOF"
+/usr/local/lib
+/opt/lib
+
+EOF
+	# Include lib64 if on x86_64
+	if [ "$CUCARCH" = "x86_64" ]; then
+	cat >> $DESTDIR/etc/ld.so.conf.new << "EOF"
+/lib64
+/usr/lib64
+/usr/local/lib64
+
+EOF
+	fi
+
+	# Move a configuration file so it is not clobbered on package updates
+	mv $DESTDIR/etc/rpc{,.new} || exit 1
+
+	# Strip all of the binaries and libraries in $DESTDIR/ of their
+	# debugging symbols.
+	pkgapi_strip
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+}
+
