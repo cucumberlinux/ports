@@ -35,6 +35,19 @@ build () {
 	# Apply any patches located in $OWD/patches
 	pkgapi_apply_patches || exit 1
 
+	# Change an internal script to use sed instead of ed
+	cat > bc/fix-libmath_h << "EOF"
+#! /bin/bash
+sed -e '1   s/^/{"/' \
+    -e     's/$/",/' \
+    -e '2,$ s/^/"/'  \
+    -e   '$ d'       \
+    -i libmath.h
+
+sed -e '$ s/$/0}/' \
+    -i libmath.h
+EOF
+
 	# Do the actual build
 	./configure \
 		--prefix=/usr \
