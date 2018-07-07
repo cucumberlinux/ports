@@ -80,4 +80,5 @@ popt
 efivar
 efibootmgr
 linux
+lsb-info
 
