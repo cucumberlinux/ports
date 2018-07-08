@@ -72,7 +72,7 @@ libressl
 wget
 curl
 cacertificates
-neovim
+nano
 sysvinit-bootscripts
 network-scripts
 pciutils

@@ -7,7 +7,6 @@ openssh
 fortune
 htop
 sl
-nano
 lzip
 ed
 sudo
@@ -27,4 +26,7 @@ linux-firmware
 wireless-tools
 libnl
 wpa_supplicant
+
+# TODO: put this AFTER Cmake
+neovim
 
