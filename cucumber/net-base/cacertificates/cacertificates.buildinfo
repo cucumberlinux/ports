@@ -43,6 +43,8 @@ build () {
 		$DESTDIR/usr/bin/make-ca.sh || exit 1
 	install -m 744 $OWD/scripts/remove-expired-certs.sh \
 		$DESTDIR/usr/sbin/remove-expired-certs.sh || exit 1
+	install -m 755 $OWD/scripts/c_rehash \
+		$DESTDIR/usr/bin/c_rehash || exit 1
 
 	# Copy the certdata.txt over from NSS
 	cp nss-*/nss/lib/ckfw/builtins/certdata.txt ./ || exit 1
@@ -57,7 +59,7 @@ build () {
 
 	install -d ${SSLDIR}/certs
 	cp -v certs/*.pem ${SSLDIR}/certs
-	c_rehash || exit 1
+	$DESTDIR/usr/bin/c_rehash || exit 1
 	install BLFS-ca-bundle*.crt ${SSLDIR}/ca-bundle.crt || exit 1
 	ln -sfv ../ca-bundle.crt ${SSLDIR}/certs/ca-certificates.crt || exit 1
 
