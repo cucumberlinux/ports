@@ -36,6 +36,10 @@ build () {
 	# in klogd:
 	sed -i '/Error loading kernel symbols/{n;n;d}' ksym_mod.c
 
+	# Fix a bug that prevents building with newer toolchains (circa GCC
+	# 7.3.0+)
+	sed -i 's/union wait/int/' syslogd.c
+
 	# Apply any patches located in $OWD/patches
 	pkgapi_apply_patches || exit 1
 
