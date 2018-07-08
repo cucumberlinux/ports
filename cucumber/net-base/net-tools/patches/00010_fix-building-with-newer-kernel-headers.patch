@@ -1,0 +1,18 @@
+Author: Scott Court (scott@cucumberlinux.com)
+
+Fixes a bug that caused net-tools to fail to build with newer kernel headers
+(circa 4.16). The header netinet/ip.h was changed to redefine the struct iphdr,
+which cause the build to fail.
+--- a/iptunnel.c	2018-07-08 10:39:03.846000000 -0400
++++ b/iptunnel.c	2018-07-08 10:39:55.246000000 -0400
+@@ -26,7 +26,10 @@
+ #include <sys/socket.h>
+ #include <sys/ioctl.h>
+ #include <netinet/in.h>
++#include <linux/version.h>
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4,16,0)
+ #include <netinet/ip.h>
++#endif
+ #include <arpa/inet.h>
+ #if defined(__GLIBC__) && (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 1))
+ #include <net/if.h>
