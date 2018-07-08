@@ -52,6 +52,7 @@ build () {
 		--localstatedir=/var \
 		--enable-shared \
 		--disable-werror \
+		--enable-64-bit-bfd \
 		--build=$CUCARCH-cucumber-linux || exit 1
 	pkgapi_make tooldir=/usr || exit 1
 	make install tooldir=/usr DESTDIR=$DESTDIR || exit 1
