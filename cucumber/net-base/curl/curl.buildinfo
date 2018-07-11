@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for curl
 
 NAME=curl
-VERSION=7.60.0
+VERSION=7.61.0
 URL=(https://curl.haxx.se/download/$NAME-$VERSION.tar.gz https://curl.haxx.se/download/$NAME-$VERSION.tar.gz.asc)
 BUILDDEPS=()
 
