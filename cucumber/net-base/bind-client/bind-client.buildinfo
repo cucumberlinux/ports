@@ -24,7 +24,7 @@
 
 NAME=bind-client
 TARNAME=bind
-VERSION=9.11.3
+VERSION=9.11.4
 URL=(https://ftp.isc.org/isc/bind9/$VERSION/$TARNAME-$VERSION.tar.gz)
 BUILDDEPS=()
 
