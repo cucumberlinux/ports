@@ -53,10 +53,11 @@ Now the conversion is complete.
 §2. Update the Package to the New Version
 
 Please update the packages to the version listed at
-https://mirror.cucumberlinux.com/sandbox/cucumber-2.0/Cucumber-Linux-2.0-Package-Versions.html if the packages is listed on the webpage. If the package is not
-listed on that webpage, then update the whatever the latest stable version is.
-If you think there is a good reason to make an exception to these guidelines
-for a package, talk to Scott about it.
+https://mirror.cucumberlinux.com/sandbox/cucumber-2.0/Cucumber-Linux-2.0-Package-Versions.html
+if the packages is listed on the webpage. If the package is not listed on that
+webpage, then update the whatever the latest stable version is.  If you think
+there is a good reason to make an exception to these guidelines for a package,
+talk to Scott about it.
 
 When updating packages to the new version, all that should be necessary is the
 following:

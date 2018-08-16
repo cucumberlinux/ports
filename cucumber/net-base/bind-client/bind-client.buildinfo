@@ -24,14 +24,15 @@
 
 NAME=bind-client
 TARNAME=bind
-VERSION=9.11.4
+TARVERSION=9.11.4-P1
+VERSION=$(echo $TARVERSION | sed -e s/-/_/g)
 URL=(https://ftp.isc.org/isc/bind9/$VERSION/$TARNAME-$VERSION.tar.gz)
 BUILDDEPS=()
 
 build () {
 
-	tar -xf "$OWD/$TARNAME-$VERSION.tar.gz" || exit 1
-	cd $TARNAME-$VERSION || exit 1
+	tar -xf "$OWD/$TARNAME-$TARVERSION.tar.gz" || exit 1
+	cd $TARNAME-$TARVERSION || exit 1
 
 	# Apply any patches located in $OWD/patches
 	pkgapi_apply_patches || exit 1
