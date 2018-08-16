@@ -1,0 +1,169 @@
+#!/bin/bash
+
+# Copyright 2017, 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for thunderbird
+
+NAME=thunderbird
+VERSION=60.0
+URL=(
+	http://ftp.mozilla.org/pub/thunderbird/releases/$VERSION/source/$NAME-$VERSION.source.tar.xz
+	http://ftp.mozilla.org/pub/thunderbird/releases/$VERSION/source/$NAME-$VERSION.source.tar.xz.asc
+)
+BUILDDEPS=(gtk3 zip unzip yasm python2)
+
+verify () {
+	pkgapi_gpg --verify $NAME-$VERSION.source.tar.xz.asc || return 1
+}
+
+build () {
+
+	tar -xf "$OWD/$NAME-$VERSION.source.tar.xz" || exit 1
+	cd $NAME-$VERSION || exit 1
+
+	# For some reason Firefox now requires (starting with Firefox 52) the
+	# incredilby ancient autoconf 2.13 to build. Apparantly Mozilla is too
+	# lazy to make a portable build system. Thanks guys! We'll build a
+	# temporary version of autoconf 2.13 to make Firefox happy.
+	#
+	# Thanks to Patrick Volkerding of Slackware Linux for this workaround
+	# script.
+	( cd $OWD/autoconf ; ./autoconf.build )
+	PATH=/tmp/autoconf-tmp/usr/bin:$PATH
+
+	# Apply any patches located in $OWD/patches
+	pkgapi_apply_patches || exit 1
+
+	# Do the actual build
+	cat > mozconfig << "EOF"
+# If you have a multicore machine, the build may be faster if using parallel
+# jobs. The build system automatically adds -jN to the "make" flags, where N
+# is the number of CPU cores. The option below is therefore useless, unless
+# you want to use a smaller number of jobs:
+#mk_add_options MOZ_MAKE_FLAGS="-j1"
+
+# Multilib support
+ac_add_options --libdir=/usr/lib${LIBDIRSUFFIX}
+
+# If you have installed DBus-Glib comment out this line:
+ac_add_options --disable-dbus
+
+# If you have installed wireless-tools comment out this line:
+ac_add_options --disable-necko-wifi
+
+# GStreamer is necessary for H.264 video playback in HTML5 Video Player;
+# to be enabled, also remember to set "media.gstreamer.enabled" to "true"
+# in about:config. If you have GStreamer 1.x.y, comment out this line and
+# uncomment the following one:
+# This is no longer necessary in Thunderbird 52
+#ac_add_options --disable-gstreamer
+#ac_add_options --enable-gstreamer=1.0
+
+# Uncomment these lines if you have installed optional dependencies:
+#ac_add_options --enable-system-hunspell
+#ac_add_options --enable-startup-notification
+
+# Comment out following option if you have PulseAudio installed
+ac_add_options --disable-pulseaudio
+
+# Comment out following option if you have gconf installed
+ac_add_options --disable-gconf
+
+# Stylo is the new CSS code, including the rust 'style' package. It is enabled
+# by default but requires clang, which is not part of Cucumber Linux 1.x, so we
+# will disable it.
+# Comment out following option if you have clang installed
+ac_add_options --disable-stylo
+
+# Compile with the GTK3 theming. We used to be able to choose between GTK2 and
+# GTK3, but starting with Thunderbird 60.0 the developers decided to remove
+# that capability, forcing everyone to switch to GTK3. Thanks guys :/
+ac_add_options --enable-default-toolkit=cairo-gtk3
+
+# The BLFS editors recommend not changing anything below this line:
+ac_add_options --prefix=/usr
+ac_add_options --enable-application=comm/mail
+
+# If you want to compile the Mozilla Calendar, uncomment this line:
+ac_add_options --enable-calendar
+
+ac_add_options --disable-crashreporter
+# This option is no longer necessary in Thunderbird 52
+#ac_add_options --disable-installer
+ac_add_options --disable-updater
+ac_add_options --disable-debug
+ac_add_options --disable-tests
+
+ac_add_options --enable-optimize
+ac_add_options --enable-strip
+ac_add_options --enable-install-strip
+
+#ac_add_options --enable-gio
+ac_add_options --enable-official-branding
+#ac_add_options --enable-safe-browsing
+#ac_add_options --enable-url-classifier
+
+# Use internal cairo due to reports of unstable execution with
+# system cairo
+#ac_add_options --enable-system-cairo
+ac_add_options --enable-system-ffi
+ac_add_options --enable-system-pixman
+
+ac_add_options --with-pthreads
+
+ac_add_options --with-system-bz2
+ac_add_options --with-system-jpeg
+ac_add_options --with-system-zlib
+EOF
+
+	./mach build || exit 1
+        DESTDIR=$DESTDIR ./mach install || exit 1
+
+	# Setup the .desktop file and icons
+	mkdir -pv $DESTDIR/usr/share/{applications,pixmaps}
+	cat > $DESTDIR/usr/share/applications/thunderbird.desktop << "EOF" &&
+[Desktop Entry]
+Encoding=UTF-8
+Name=Thunderbird Mail
+Comment=Send and receive mail with Thunderbird
+GenericName=Mail Client
+Exec=thunderbird %u
+Terminal=false
+Type=Application
+Icon=thunderbird
+Categories=Application;Network;Email;
+MimeType=application/xhtml+xml;text/xml;application/xhtml+xml;application/xml;application/rss+xml;x-scheme-handler/mailto;
+StartupNotify=true
+EOF
+
+	ln -sfv /usr/lib/thunderbird/chrome/icons/default/default128.png \
+	        $DESTDIR/usr/share/pixmaps/thunderbird.png
+
+	# Strip all of the binaries and libraries in $DESTDIR/ of their
+	# debugging symbols.
+	pkgapi_strip
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+}
+
