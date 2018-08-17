@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for firefox
 
 NAME=firefox
-VERSION=60.0.2esr
+VERSION=60.1.0esr
 URL=(https://ftp.mozilla.org/pub/firefox/releases/$VERSION/source/$NAME-$VERSION.source.tar.xz{,.asc})
 BUILDDEPS=(gtk+ gtk+3 libnotify nss alsa-lib rustc unzip yasm python2)
 
