@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for openssh
 
 NAME=openssh
-VERSION=7.7p1
+VERSION=7.8p1
 URL=(https://ftp4.usa.openbsd.org/pub/OpenBSD/OpenSSH/portable/$NAME-$VERSION.tar.gz https://ftp4.usa.openbsd.org/pub/OpenBSD/OpenSSH/portable/$NAME-$VERSION.tar.gz.asc)
 BUILDDEPS=()
 
@@ -44,6 +44,9 @@ build () {
 	pkgapi_apply_patches || exit 1
 
 	# Do the actual build
+	# Yes, the use of MD5 hashes for passwords is acceptable here, as the
+	# only other option is the plain Unix 'crypt'. Given that, MD5 is the
+	# lesser of the two evils.
 	./configure \
 		--prefix=/usr \
 		--libdir=/usr/lib${LIBDIRSUFFIX} \
