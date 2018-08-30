@@ -6,14 +6,14 @@
 # customary to leave one space after the ':' except on otherwise blank lines.
 
       |-----handy-ruler------------------------------------------------------|
-phase3: phase3 (Meta Package for building Phase 3)
-phase3:
-phase3: This is a meta package for building the phase 3 packages. When built,
-phase3: it will not install a package by the name 'phase3', rather it will
-phase3: trigger building any phase 3 packages that are not already installed.
-phase3:
-phase3:
-phase3:
-phase3:
-phase3:
-phase3:
+phase4: phase4 (Meta Package for building Phase 4)
+phase4:
+phase4: This is a meta package for building the phase 4 packages. When built,
+phase4: it will not install a package by the name 'phase4', rather it will
+phase4: trigger building any phase 4 packages that are not already installed.
+phase4:
+phase4:
+phase4:
+phase4:
+phase4:
+phase4:
