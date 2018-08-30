@@ -1,5 +1,35 @@
-# This metapackage builds the Cucumber Linux phase 3 packages. It attempts to
-# follow the original build order from Cucumber Linux 1.0 as closely as
-# possible. The actual Cucumber Linux 1.0 build order can be found at:
-# http://mirror.cucumberlinux.com/cucumber/cucumber-1.0/CHANGELOG
+# This metapackage builds the Cucumber Linux phase 3 packages. 
+
+# Phase 3 builds the necessary packages for the /cucumber directory of the
+# ports tree to become entirely self hosted. At the end of phase 3, the system
+# is capable of both running and compiling itself.
+
+# Build stuff to support other network configurations besides ethernet with a
+# static IP.
+dhcpcd
+wireless-tools
+wpa_supplicant
+
+# Build some basic networking programs so that we can wget/curl source files
+# from HTTP and HTTPS download sites.
+bind-client
+libressl
+wget
+curl
+cacertificates
+
+# Build the additional kernel firmware. Some wireless cards require this to
+# work. Also build git; it's a built time dependency of linux-firmware.
+git
+linux-firmware
+
+# Build GPG. Many packages' buildscripts require this to verify the integrity
+# of downloaded source files. It also has a lot of dependencies, so build those
+# first.
+libgpg-error
+libassuan
+libgcrypt
+libksba
+npth
+gnupg
 

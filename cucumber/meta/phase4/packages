@@ -3,6 +3,10 @@
 # possible. The actual Cucumber Linux 1.0 build order can be found at:
 # http://mirror.cucumberlinux.com/cucumber/cucumber-1.0/CHANGELOG
 
+# Phase 4 builds the remaining packages in the /cucumber directory of the ports
+# tree that are not built in phases 2 or 3. At the end of phase 4, the system
+# is complete.
+
 openssh
 fortune
 htop
@@ -18,14 +22,8 @@ unzip
 zip
 libffi
 iputils
-dhcpcd
-bind-client
 whois
-git
-linux-firmware
-wireless-tools
 libnl
-wpa_supplicant
 
 # TODO: put this AFTER Cmake
 neovim

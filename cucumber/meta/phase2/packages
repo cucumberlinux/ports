@@ -4,6 +4,10 @@
 # Cucumber Linux 1.0 build order can be found at:
 # https://z5t1.com/cucumber/wiki/buildsystem
 
+# Phase 2 builds an initial bootstrap system. At the end of phase 2, the system
+# is capable of running itself (without the /tools directory), but is not be
+# capable of compiling itself.
+
 linux-headers
 man-pages
 glibc
@@ -68,10 +72,6 @@ etc
 which
 pkgtools
 dialog
-libressl
-wget
-curl
-cacertificates
 nano
 sysvinit-bootscripts
 network-scripts
