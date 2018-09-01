@@ -23,7 +23,9 @@ zip
 libffi
 iputils
 whois
+links
 libnl
+libpcap
 
 # TODO: put this AFTER Cmake
 neovim
