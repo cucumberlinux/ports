@@ -1,0 +1,70 @@
+#!/bin/bash
+
+# Copyright 2016, 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for sqlite
+
+NAME=sqlite
+VERSION=3.24.0
+TARVERSION=3240000
+RELEASE_YEAR=2018
+URL=(https://sqlite.org/$RELEASE_YEAR/$NAME-autoconf-$TARVERSION.tar.gz https://sqlite.org/$RELEASE_YEAR/$NAME-doc-$TARVERSION.zip)
+BUILDDEPS=(unzip)
+
+build () {
+
+	tar -xf "$OWD/$NAME-autoconf-$TARVERSION.tar.gz" || exit 1
+	cd $NAME-autoconf-$TARVERSION || exit 1
+	unzip $OWD/sqlite-doc-${TARVERSION}.zip || exit 1
+
+	# Apply any patches located in $OWD/patches
+	pkgapi_apply_patches || exit 1
+
+	# Do the actual build
+	./configure \
+		--prefix=/usr \
+		--libdir=/usr/lib${LIBDIRSUFFIX} \
+		--sysconfdir=/etc \
+		--localstatedir=/var \
+		--disable-static \
+		CFLAGS=" -g \
+		-DSQLITE_THREADSAFE=0 \
+		-DSQLITE_DEFAULT_MEMSTATUS=0 \
+		-DSQLITE_DEFAULT_WAL_SYNCHRONOUS=1 \
+		-DSQLITE_LIKE_DOESNT_MATCH_BLOBS \
+		-DSQLITE_MAX_EXPR_DEPTH=0 \
+		-DSQLITE_OMIT_DECLTYPE \
+		-DSQLITE_OMIT_PROGRESS_CALLBACK \
+		-DSQLITE_OMIT_SHARED_CACHE "\
+		--build=$CUCARCH-cucumber-linux || exit 1
+	pkgapi_make || exit 1
+	make install DESTDIR=$DESTDIR || exit 1
+
+	# Strip all of the binaries and libraries in $DESTDIR/ of their
+	# debugging symbols.
+	pkgapi_strip
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+}
+
