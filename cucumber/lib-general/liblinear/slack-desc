@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+         |-----handy-ruler------------------------------------------------------|
+liblinear: This package provides a library for learning linear classifiers for 
+liblinear: large scale applications. It supports Support Vector Machines (SVM) 
+liblinear: with L2 and L1 loss, logistic regression, multi class classification 
+liblinear: and also Linear Programming Machines (L1-regularized SVMs). Its 
+liblinear: computational complexity scales linearly with the number of training 
+liblinear: examples making it one of the fastest SVM solvers around. 
+liblinear:
+liblinear:
+liblinear:
+liblinear:
+liblinear:
