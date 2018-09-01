@@ -38,4 +38,11 @@ poppler
 # TODO: put this AFTER Cmake. It may also require some further work to get it
 # to build during a Cucumber Linux from Scratch build.
 neovim
+apr
+apr-util
+apache
+libxml2
+php
+sqlite
+libarchive
 
