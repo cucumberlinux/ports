@@ -1,0 +1,11 @@
+#!/bin/bash
+
+#BLURB="Configure the local time zone"
+
+# Timezone setup script
+# This script prompts the user to select the local time zone and sets up
+# /etc/localtime appropriately.
+
+LOCALTIME=$(usr/bin/tzselect)
+cp -vf usr/share/zoneinfo/$LOCALTIME etc/localtime
+ln -sf ../usr/share/zoneinfo/$LOCALTIME etc/localtime-source
