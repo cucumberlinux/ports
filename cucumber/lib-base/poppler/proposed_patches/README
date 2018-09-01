@@ -1,0 +1,2 @@
+This directory contains patches that have we have proposed applying, but cannot
+yet be applied due to stability of backporting issues.
