@@ -1,0 +1,46 @@
+<Layout Cucumber>
+    prefix:        /usr
+    exec_prefix:   ${prefix}
+    bindir:        ${prefix}/bin
+    sbindir:       ${prefix}/sbin
+    libdir:        ${prefix}/lib
+    libexecdir:    ${libdir}/httpd
+    mandir:        ${prefix}/share/man
+    sysconfdir:    /etc/httpd
+    datadir:       /srv/www
+    installbuilddir: ${datadir}/build
+    errordir:      ${datadir}/error
+    iconsdir:      ${datadir}/icons
+    htdocsdir:     ${datadir}/html
+    manualdir:     ${datadir}/manual
+    cgidir:        ${datadir}/cgi-bin
+    includedir:    ${prefix}/include/apache
+    localstatedir: /var
+    runtimedir:    ${localstatedir}/run
+    logfiledir:    ${localstatedir}/log/httpd
+    proxycachedir: ${localstatedir}/cache/httpd
+</Layout>
+
+<Layout Cucumber64>
+    prefix:        /usr
+    exec_prefix:   ${prefix}
+    bindir:        ${prefix}/bin
+    sbindir:       ${prefix}/sbin
+    libdir:        ${prefix}/lib64
+    libexecdir:    ${libdir}/httpd
+    mandir:        ${prefix}/share/man
+    sysconfdir:    /etc/httpd
+    datadir:       /srv/www
+    installbuilddir: ${datadir}/build
+    errordir:      ${datadir}/error
+    iconsdir:      ${datadir}/icons
+    htdocsdir:     ${datadir}/html
+    manualdir:     ${datadir}/manual
+    cgidir:        ${datadir}/cgi-bin
+    includedir:    ${prefix}/include/apache
+    localstatedir: /var
+    runtimedir:    ${localstatedir}/run
+    logfiledir:    ${localstatedir}/log/httpd
+    proxycachedir: ${localstatedir}/cache/httpd
+</Layout>
+

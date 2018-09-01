@@ -1,0 +1,121 @@
+#!/bin/bash
+
+# Copyright 2016, 2017, 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for apache
+
+NAME=apache
+TARNAME=httpd
+VERSION=2.4.34
+URL=(https://archive.apache.org/dist/$TARNAME/$TARNAME-$VERSION.tar.gz https://archive.apache.org/dist/$TARNAME/$TARNAME-$VERSION.tar.gz.asc)
+BUILDDEPS=(apr-util pcre)
+
+verify () {
+	pkgapi_gpg --verify $TARNAME-$VERSION.tar.gz.asc || return 1
+}
+
+build () {
+
+	tar -xf "$OWD/$TARNAME-$VERSION.tar.gz" || exit 1
+	cd $TARNAME-$VERSION || exit 1
+	cat "$OWD/config.layout" >> config.layout
+
+	# Determine the build layout
+	case $CUCARCH in
+		x86_64)	APACHE_LAYOUT="Cucumber64"	;;
+		*)	APACHE_LAYOUT="Cucumber"	;;
+	esac
+
+	# Apply any patches located in $OWD/patches
+	pkgapi_apply_patches || exit 1
+
+	# Do the actual build
+	sed '/dir.*CFG_PREFIX/s@^@#@' -i support/apxs.in
+	./configure \
+		--enable-authnz-fcgi \
+		--enable-layout=${APACHE_LAYOUT} \
+		--enable-mods-shared="all cgi" \
+		--enable-mpms-shared=all \
+		--enable-suexec=shared \
+		--with-apr=/usr/bin/apr-1-config \
+		--with-apr-util=/usr/bin/apu-1-config \
+		--with-suexec-bin=/usr/lib${LIBDIRSUFFIX}/httpd/suexec \
+		--with-suexec-caller=apache \
+		--with-suexec-docroot=/srv/www \
+		--with-suexec-logfile=/var/log/httpd/suexec.log \
+		--with-suexec-uidmin=100 \
+		--with-suexec-userdir=public_html \
+		--build=$CUCARCH-cucumber-linux || exit 1
+	pkgapi_make || exit 1
+	make install DESTDIR=$DESTDIR || exit 1
+	mv -v /usr/sbin/suexec $DESTDIR/usr/lib${LIBDIRSUFFIX}/httpd/suexec 
+	chgrp apache $DESTDIR/usr/lib${LIBDIRSUFFIX}/httpd/suexec 
+	chmod 4754 $DESTDIR/usr/lib${LIBDIRSUFFIX}/httpd/suexec 
+	chown -v -R 25:25 $DESTDIR/srv/www
+
+	# Move the configuration files to .new files
+	mv $DESTDIR/etc/httpd/extra/httpd-autoindex.conf $DESTDIR/etc/httpd/extra/httpd-autoindex.conf.new
+	mv $DESTDIR/etc/httpd/extra/httpd-dav.conf $DESTDIR/etc/httpd/extra/httpd-dav.conf.new
+	mv $DESTDIR/etc/httpd/extra/httpd-default.conf $DESTDIR/etc/httpd/extra/httpd-default.conf.new
+	mv $DESTDIR/etc/httpd/extra/httpd-info.conf $DESTDIR/etc/httpd/extra/httpd-info.conf.new
+	mv $DESTDIR/etc/httpd/extra/httpd-languages.conf $DESTDIR/etc/httpd/extra/httpd-languages.conf.new
+	mv $DESTDIR/etc/httpd/extra/httpd-manual.conf $DESTDIR/etc/httpd/extra/httpd-manual.conf.new
+	mv $DESTDIR/etc/httpd/extra/httpd-mpm.conf $DESTDIR/etc/httpd/extra/httpd-mpm.conf.new
+	mv $DESTDIR/etc/httpd/extra/httpd-multilang-errordoc.conf $DESTDIR/etc/httpd/extra/httpd-multilang-errordoc.conf.new
+	mv $DESTDIR/etc/httpd/extra/httpd-ssl.conf $DESTDIR/etc/httpd/extra/httpd-ssl.conf.new
+	mv $DESTDIR/etc/httpd/extra/httpd-userdir.conf $DESTDIR/etc/httpd/extra/httpd-userdir.conf.new
+	mv $DESTDIR/etc/httpd/extra/httpd-vhosts.conf $DESTDIR/etc/httpd/extra/httpd-vhosts.conf.new
+	mv $DESTDIR/etc/httpd/extra/proxy-html.conf $DESTDIR/etc/httpd/extra/proxy-html.conf.new
+	mv $DESTDIR/srv/www/html $DESTDIR/srv/www/html.new
+
+	# Enable index.php support in Apache
+	sed -i $DESTDIR/etc/httpd/httpd.conf.new -e 's/DirectoryIndex index.html/DirectoryIndex index.html index.php/'
+
+	# Enable fastCGI support in the Apache web server
+	sed -i -e '/proxy_module/s/^#//'      \
+		-e '/proxy_fcgi_module/s/^#//' \
+		$DESTDIR/etc/httpd/httpd.conf.new
+	echo \
+		'ProxyPassMatch ^/(.*\.php)$ fcgi://127.0.0.1:9000/srv/www/html/$1' >> \
+		$DESTDIR/etc/httpd/httpd.conf.new
+
+	# Add a symlink for people expecting to find /var/www
+	ln -sv ../srv/www $DESTDIR/var/www
+
+	# For some reason Apache installs the man pages with non-root
+	# ownership. Fix it.
+	chown $DESTDIR/usr/share/man root:root -R
+
+	# Strip all of the binaries and libraries in $DESTDIR/ of their
+	# debugging symbols.
+	pkgapi_strip
+
+	# Install the init script
+	mkdir -pv $DESTDIR/etc/rc.d/init.d
+	cat $OWD/httpd > $DESTDIR/etc/rc.d/init.d/httpd
+	chmod 755 $DESTDIR/etc/rc.d/init.d/httpd
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+}
+

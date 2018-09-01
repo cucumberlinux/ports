@@ -1,0 +1,57 @@
+#!/bin/sh
+########################################################################
+# Begin httpd
+#
+# Description : Starts the Apache HTTP server
+#
+# Authors     : Scott Court (Z5T1@Z5T1.com)
+#
+# Version     : Cucumber 1.0
+#
+########################################################################
+
+### BEGIN SYMLINK INFO
+# This section controls the name of the symlinks that are created in
+# /etc/rc.d/rc?.d by chkconfig and the system init setup script.
+# START_LINK_NAME	S85httpd
+# KILL_LINK_NAME	K15httpd
+### END SYMLINK INFO
+
+### BEGIN INIT INFO
+# Provides:		httpd
+# Default-Start: 345
+# Default-Stop: 0126
+### END INIT INFO
+
+. /lib/lsb/init-functions
+
+case "${1}" in
+   start)
+      log_info_msg "Starting Apache HTTP daemon..."
+      start_daemon /usr/sbin/apachectl -k start 
+      evaluate_retval
+      ;;
+
+   stop)
+      log_info_msg "Stopping Apache HTTP daemon..."
+      start_daemon /usr/sbin/apachectl -k stop
+      evaluate_retval
+      ;;
+
+   restart)
+      log_info_msg "Restarting Apache HTTP daemon..."
+      start_daemon /usr/sbin/apachectl -k restart
+      evaluate_retval
+      ;;
+   status)
+      statusproc /usr/sbin/httpd
+      ;;
+   *)
+      echo "Usage: ${0} {start|stop|restart|status}"
+      exit 1
+      ;;
+esac
+
+exit 0
+
+# End httpd
