@@ -26,7 +26,16 @@ whois
 links
 libnl
 libpcap
-
-# TODO: put this AFTER Cmake
+pcre
+liblinear
+nmap
+tcpdump
+iptables
+freetype
+fontconfig
+cmake
+poppler
+# TODO: put this AFTER Cmake. It may also require some further work to get it
+# to build during a Cucumber Linux from Scratch build.
 neovim
 

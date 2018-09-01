@@ -79,6 +79,7 @@ pciutils
 popt
 efivar
 efibootmgr
+glibc-zoneinfo
 linux
 lsb-info
 
