@@ -1,0 +1,57 @@
+#!/bin/sh
+########################################################################
+# Begin rsyncd
+#
+# Description : Starts the rsync server
+#
+# Authors     : Scott Court (Z5T1@Z5T1.com)
+#
+# Version     : Cucumber 1.0
+#
+########################################################################
+
+### BEGIN SYMLINK INFO
+# This section controls the name of the symlinks that are created in
+# /etc/rc.d/rc?.d by chkconfig and the system init setup script.
+# START_LINK_NAME	S30rsyncd
+# KILL_LINK_NAME	K70rsyncd
+### END SYMLINK INFO
+
+### BEGIN INIT INFO
+# Provides:		rsyncd
+# Default-Start: 345
+# Default-Stop: 0126
+### END INIT INFO
+
+. /lib/lsb/init-functions
+
+case "${1}" in
+   start)
+      log_info_msg "Starting Rsync Server..."
+      start_daemon /usr/bin/rsync --daemon 
+      evaluate_retval
+      ;;
+
+   stop)
+      log_info_msg "Stopping Rsync Server..."
+      killproc /usr/bin/rsync
+      evaluate_retval
+      ;;
+
+   restart)
+      $0 stop
+      sleep 1
+      $0 start
+      ;;
+   status)
+      statusproc /usr/bin/rsync
+      ;;
+   *)
+      echo "Usage: ${0} {start|stop|restart|status}"
+      exit 1
+      ;;
+esac
+
+exit 0
+
+# End rsyncd
