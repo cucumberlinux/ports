@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+        |-----handy-ruler------------------------------------------------------|
+libXdmcp: libXdmcp (the X Display Manager Control Protocol library)
+libXdmcp:
+libXdmcp: The libXdmcp package contains a library implementing the X Display
+libXdmcp: Manager Control Protocol. This is useful for allowing clients to
+libXdmcp: interact with the X Display Manager.
+libXdmcp:
+libXdmcp:
+libXdmcp:
+libXdmcp:
+libXdmcp:
+libXdmcp:
