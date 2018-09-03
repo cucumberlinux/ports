@@ -1,0 +1,89 @@
+#!/bin/sh
+########################################################################
+# Begin mysqld
+#
+# Description : Starts the MariaDB server
+#
+# Authors     : Scott Court (Z5T1@Z5T1.com)
+#
+# Version     : Cucumber 1.0
+#
+########################################################################
+
+### BEGIN SYMLINK INFO
+# This section controls the name of the symlinks that are created in
+# /etc/rc.d/rc?.d by chkconfig and the system init setup script.
+# START_LINK_NAME	S64mysqld
+# KILL_LINK_NAME	K36mysqld
+### END SYMLINK INFO
+
+### BEGIN INIT INFO
+# Provides:		mysqld
+# Default-Start: 345
+# Default-Stop: 0126
+### END INIT INFO
+
+. /lib/lsb/init-functions
+
+PIDFILE=/srv/mysql/`/bin/hostname`.pid
+
+case "$1" in
+   start)
+      log_info_msg "Starting MySQL daemon..."
+
+      # Make sure the database has been initialized
+      if [ ! -e /srv/mysql/mysql ]; then
+         mysql_install_db --basedir=/usr --datadir=/srv/mysql --user=mysql
+         chown -R mysql:mysql /srv/mysql
+      fi
+
+      # Make sure the mysql user can create a socket
+      mkdir -p /run/mysqld
+      chown mysql.mysql /run/mysqld
+
+      if [ -f "$PIDFILE" ]; then
+         if /bin/ps -e | grep `cat $PIDFILE` | grep mysqld >/dev/null ; then
+            log_warning_msg "\n   mysqld already running!" 
+            exit 0
+         else
+            rm -f "$PIDFILE"
+            if [ -f "$PIDFILE" ]; then
+               log_failure_msg2
+               exit 1
+            fi
+         fi
+      fi
+
+      /usr/bin/mysqld_safe --user=mysql 2>&1 >/dev/null &
+      evaluate_retval
+      ;;
+
+   stop)
+      log_info_msg "Stopping MySQL daemon..."
+      killproc -p ${PIDFILE} /usr/sbin/mysqld
+      evaluate_retval
+      ;;
+
+   reload)
+      log_info_msg "Reloading MySQL ..."
+      killproc -p ${PIDFILE} /usr/sbin/mysqld -HUP
+      evaluate_retval
+      ;;
+
+   restart)
+      $0 stop
+      sleep 1
+      $0 start
+      ;;
+
+   status)
+      statusproc /usr/sbin/mysqld
+      ;;
+
+   *)
+      echo "Usage: $0 {start|stop|reload|restart|status}"
+      exit 1
+      ;;
+esac
+
+# End mysqld
