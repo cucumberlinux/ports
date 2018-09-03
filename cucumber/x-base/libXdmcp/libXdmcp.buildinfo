@@ -24,7 +24,7 @@
 
 NAME=libXdmcp
 VERSION=1.1.2
-URL=(http://ftp.x.org/pub/individual/lib/$NAME-$VERSION.tar.bz2)
+URL=(https://ftp.x.org/pub/individual/lib/$NAME-$VERSION.tar.bz2)
 BUILDDEPS=(xorg-protocol-headers)
 
 build () {
