@@ -45,4 +45,16 @@ libxml2
 php
 sqlite
 libarchive
+mariadb
+rsync
+libpng
+talloc
+mtdev
+
+# Build a Basic Xorg
+util-macros
+xorg-protocol-headers
+libXau
+libXdmcp
+xcb-proto
 
