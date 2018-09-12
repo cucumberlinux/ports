@@ -1,0 +1,21 @@
+--- a/tools/clang/lib/Driver/ToolChains/Gnu.cpp	2017-12-08 19:34:01.000000000 -0500
++++ b/tools/clang/lib/Driver/ToolChains/Gnu.cpp	2018-09-03 14:40:48.880000000 -0400
+@@ -1735,7 +1735,7 @@ bool Generic_GCC::GCCInstallationDetecto
+       "x86_64-redhat-linux",    "x86_64-suse-linux",
+       "x86_64-manbo-linux-gnu", "x86_64-linux-gnu",
+       "x86_64-slackware-linux", "x86_64-linux-android",
+-      "x86_64-unknown-linux"};
++      "x86_64-cucumber-linux",  "x86_64-unknown-linux"};
+   static const char *const X32LibDirs[] = {"/libx32"};
+   static const char *const X86LibDirs[] = {"/lib32", "/lib"};
+   static const char *const X86Triples[] = {
+@@ -1743,7 +1743,7 @@ bool Generic_GCC::GCCInstallationDetecto
+       "i386-linux-gnu",       "i386-redhat-linux6E",   "i686-redhat-linux",
+       "i586-redhat-linux",    "i386-redhat-linux",     "i586-suse-linux",
+       "i486-slackware-linux", "i686-montavista-linux", "i686-linux-android",
+-      "i586-linux-gnu"};
++      "i686-cucumber-linux",  "i586-linux-gnu"};
+ 
+   static const char *const MIPSLibDirs[] = {"/lib"};
+   static const char *const MIPSTriples[] = {"mips-linux-gnu", "mips-mti-linux",
+

@@ -1,0 +1,92 @@
+#!/bin/bash
+
+# Copyright 2016, 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for llvm
+
+NAME=llvm
+VERSION=6.0.1
+URL=(
+https://releases.llvm.org/$VERSION/$NAME-$VERSION.src.tar.xz
+https://releases.llvm.org/$VERSION/$NAME-$VERSION.src.tar.xz.sig
+https://releases.llvm.org/$VERSION/cfe-$VERSION.src.tar.xz
+https://releases.llvm.org/$VERSION/cfe-$VERSION.src.tar.xz.sig
+https://releases.llvm.org/$VERSION/compiler-rt-$VERSION.src.tar.xz
+https://releases.llvm.org/$VERSION/compiler-rt-$VERSION.src.tar.xz.sig
+)
+BUILDDEPS=(cmake python3)
+
+verify () {
+	pkgapi_gpg --verify $NAME-$VERSION.src.tar.xz.sig || return 1
+	pkgapi_gpg --verify cfe-$VERSION.src.tar.xz.sig || return 1
+	pkgapi_gpg --verify compiler-rt-$VERSION.src.tar.xz.sig || return 1
+}
+
+build () {
+
+	tar -xf "$OWD/$NAME-$VERSION.src.tar.xz" || exit 1
+	cd $NAME-$VERSION.src || exit 1
+
+	tar -xf "$OWD/cfe-$VERSION.src.tar.xz" -C tools || exit 1
+	mv tools/cfe-$VERSION.src tools/clang || exit 1
+	tar -xf "$OWD/compiler-rt-$VERSION.src.tar.xz" -C projects || exit 1
+	mv projects/compiler-rt-$VERSION.src projects/compiler-rt || exit 1
+
+	# The run-time library needs to be fixed for 32 bit installations
+	sed -r "/ifeq.*CompilerTargetArch/s#i386#i686#g" \
+	    -i projects/compiler-rt/make/platform/clang_linux.mk
+
+	# Apply any patches located in $OWD/patches
+	pkgapi_apply_patches || exit 1
+
+	mkdir build && cd build || exit 1
+
+	# Do the actual build
+	CC=gcc CXX=g++ \
+	cmake	-DCMAKE_INSTALL_PREFIX=/usr \
+		-DLLVM_LIBDIR_SUFFIX=${LIBDIRSUFFIX} \
+		-DCLANG_RESOURCE_DIR="../lib${LIBDIRSUFFIX}/clang/${VERSION}" \
+		-DLLVM_ENABLE_FFI=ON \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DLLVM_BUILD_LLVM_DYLIB=ON \
+		-DLLVM_TARGETS_TO_BUILD="host;AMDGPU" \
+		-DLLVM_BINUTILS_INCDIR=/usr/include \
+		-Wno-dev .. || exit 1
+	pkgapi_make || exit 1
+	make install DESTDIR=$DESTDIR || exit 1
+	for file in $DESTDIR/usr/lib${LIBDIRSUFFIX}/lib{clang,LLVM,LTO}*.a
+	do
+	  test -f $file && chmod -v 644 $file
+	done
+	unset file
+	mkdir -pv $DESTDIR/usr/share/man/man1
+	install -v -m644 ../docs/_build/man/* $DESTDIR/usr/share/man/man1/
+
+	# Strip all of the binaries and libraries in $DESTDIR/ of their
+	# debugging symbols.
+	pkgapi_strip
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+}
+

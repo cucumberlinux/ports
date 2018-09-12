@@ -1,0 +1,113 @@
+#!/bin/bash
+
+# Copyright 2016 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildscript for llvm
+
+NAME=llvm
+VERSION=${VERSION:-$(echo $NAME-*.tar.xz | rev | cut -f 3- -d . | cut -f 1 -d - | rev)}
+BUILD=${BUILD:-1}
+
+# Determine the architecture we are building on if it is not explicitly specified.
+if [ -z "$CUCARCH" ]; then
+	case "$(uname -m)" in
+	# For the x86 series, force i686
+	i?86)
+		export CUCARCH="i686"
+		LIBDIRSUFFIX=""
+		;;
+	# For x86_64, set the libdir suffix to 64 (so we use /lib64 instead of /lib)
+	x86_64)
+		export CUCARCH="x86_64"
+		LIBDIRSUFFIX="64"
+		;;
+	# Use "uname -m" for all other architectures
+	*)
+		export CUCARCH=$(uname -m)
+		LIBDIRSUFFIX=""
+	esac
+fi
+
+PACKAGE=$NAME-$VERSION-$CUCARCH-$BUILD
+BUILDDIR=${BUILDDIR:-/tmp/$PACKAGE}
+DESTDIR=$BUILDDIR/bin
+
+# Save the Original Working Directory
+OWD=$(pwd)
+
+# If the build directory already exists, remove it so we have a fresh start
+if [ -e $BUILDDIR ]; then
+	rm $BUILDDIR -rf
+fi
+
+# Make a temporary directory to build/stage in
+mkdir $BUILDDIR/{bin,src} -pv
+cd $BUILDDIR/src
+
+tar -xf "$OWD/$NAME-$VERSION.tar.xz" || exit 1
+cd $NAME-$VERSION.src || exit 1
+
+# The run-time library needs to be fixed for 32 bit installations
+sed -r "/ifeq.*CompilerTargetArch/s#i386#i686#g" \
+    -i projects/compiler-rt/make/platform/clang_linux.mk
+
+mkdir build && cd build || exit 1
+
+# Do the actual build
+CC=gcc CXX=g++ \
+cmake	-DCMAKE_INSTALL_PREFIX=/usr \
+	-DLLVM_LIBDIR_SUFFIX=${LIBDIRSUFFIX} \
+	-DCLANG_RESOURCE_DIR="../lib${LIBDIRSUFFIX}/clang/${VERSION}" \
+	-DLLVM_ENABLE_FFI=ON \
+	-DCMAKE_BUILD_TYPE=Release \
+	-DLLVM_BUILD_LLVM_DYLIB=ON \
+	-DLLVM_TARGETS_TO_BUILD="host;AMDGPU" \
+	-Wno-dev .. || exit 1
+make || exit 1
+make install DESTDIR=$DESTDIR || exit 1
+for file in $DESTDIR/usr/lib${LIBDIRSUFFIX}/lib{clang,LLVM,LTO}*.a
+do
+  test -f $file && chmod -v 644 $file
+done
+unset file
+mkdir -pv $DESTDIR/usr/share/man/man1
+install -v -m644 ../docs/_build/man/* $DESTDIR/usr/share/man/man1/
+
+# Strip
+find $DESTDIR/{,usr/}{bin,lib${LIBDIRSUFFIX},sbin} -type f \
+	-exec strip --strip-debug '{}' ';'
+
+# Copy any additional package scripts
+mkdir -pv $DESTDIR/install
+if [ -e $OWD/slack-desc ]; then
+	cat $OWD/slack-desc > $DESTDIR/install/slack-desc
+fi
+if [ -e $OWD/doinst.sh ]; then
+	cat $OWD/doinst.sh > $DESTDIR/install/doinst.sh
+	chmod 755 $DESTDIR/install/doinst.sh
+fi
+
+# Compress the package
+cd $DESTDIR
+makepkg -l y -c n /tmp/$PACKAGE.txz || exit 1
+echo "Package $PACKAGE was successfully built to:"
+echo "/tmp/$PACKAGE.txz"
+
