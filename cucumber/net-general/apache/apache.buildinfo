@@ -24,7 +24,7 @@
 
 NAME=apache
 TARNAME=httpd
-VERSION=2.4.34
+VERSION=2.4.35
 URL=(https://archive.apache.org/dist/$TARNAME/$TARNAME-$VERSION.tar.gz https://archive.apache.org/dist/$TARNAME/$TARNAME-$VERSION.tar.gz.asc)
 BUILDDEPS=(apr-util pcre)
 
@@ -72,6 +72,7 @@ build () {
 	chown -v -R 25:25 $DESTDIR/srv/www
 
 	# Move the configuration files to .new files
+	mv $DESTDIR/etc/httpd/httpd.conf $DESTDIR/etc/httpd/httpd.conf.new
 	mv $DESTDIR/etc/httpd/extra/httpd-autoindex.conf $DESTDIR/etc/httpd/extra/httpd-autoindex.conf.new
 	mv $DESTDIR/etc/httpd/extra/httpd-dav.conf $DESTDIR/etc/httpd/extra/httpd-dav.conf.new
 	mv $DESTDIR/etc/httpd/extra/httpd-default.conf $DESTDIR/etc/httpd/extra/httpd-default.conf.new
