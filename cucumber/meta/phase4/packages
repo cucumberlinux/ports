@@ -50,6 +50,7 @@ rsync
 libpng
 talloc
 mtdev
+elfutils
 
 # Build a Basic Xorg
 util-macros
@@ -57,4 +58,13 @@ xorg-protocol-headers
 libXau
 libXdmcp
 xcb-proto
+xcb-util-cursor
+xcb-util-wm
+xcb-util-renderutil
+xcb-util-keysyms
+xcb-util-image
+xcb-util
+xorg-libraries
+libxcb 
+#TODO libdrm
 
