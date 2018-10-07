@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for git
 
 NAME=git
-VERSION=2.18.0
+VERSION=2.19.1
 URL=(https://mirrors.edge.kernel.org/pub/software/scm/$NAME/$NAME-$VERSION.tar.xz https://mirrors.edge.kernel.org/pub/software/scm/$NAME/$NAME-htmldocs-$VERSION.tar.xz https://mirrors.edge.kernel.org/pub/software/scm/$NAME/$NAME-manpages-$VERSION.tar.xz)
 BUILDDEPS=(python3)
 
