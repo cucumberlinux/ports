@@ -24,7 +24,7 @@
 
 NAME=bind-client
 TARNAME=bind
-TARVERSION=9.11.4-P2
+TARVERSION=9.11.5
 VERSION=$(echo $TARVERSION | sed -e s/-/_/g)
 URL=(https://ftp.isc.org/isc/bind9/$TARVERSION/$TARNAME-$TARVERSION.tar.gz)
 BUILDDEPS=()
