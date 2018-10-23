@@ -115,6 +115,10 @@ build () {
 		rm $DESTDIR/bin/xkeystone
 	done
 
+	# Move twmrc so it is not clobbered on package updates
+	mv $DESTDIR/etc/X11/app-defaults/Xmessage{,.new} || exit 1
+	mv $DESTDIR/etc/X11/app-defaults/Xmessage-color{,.new} || exit 1
+
 	# Strip all of the binaries and libraries in $DESTDIR/ of their
 	# debugging symbols.
 	pkgapi_strip
