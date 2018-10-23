@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for libdrm
 
 NAME=libdrm
-VERSION=2.4.66
+VERSION=2.4.75
 URL=(https://dri.freedesktop.org/$NAME/$NAME-$VERSION.tar.bz2)
 BUILDDEPS=()
 
