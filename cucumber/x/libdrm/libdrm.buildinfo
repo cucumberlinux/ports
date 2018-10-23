@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for libdrm
 
 NAME=libdrm
-VERSION=2.4.75
+VERSION=2.4.91
 URL=(https://dri.freedesktop.org/$NAME/$NAME-$VERSION.tar.bz2)
 BUILDDEPS=()
 
@@ -36,8 +36,8 @@ build () {
 	pkgapi_apply_patches || exit 1
 
 	# Do the actual build
-	sed -i "/pthread-stubs/d" configure.ac 
-	autoreconf -fiv
+	#sed -i "/pthread-stubs/d" configure.ac 
+	#autoreconf -fiv
 	./configure \
 		--prefix=/usr \
 		--libdir=/usr/lib${LIBDIRSUFFIX} \
