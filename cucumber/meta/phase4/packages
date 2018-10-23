@@ -66,5 +66,8 @@ xcb-util-image
 xcb-util
 xorg-libraries
 libxcb 
-#TODO libdrm
+libdrm
+mesa
+xbitmaps
+xorg-applications
 
