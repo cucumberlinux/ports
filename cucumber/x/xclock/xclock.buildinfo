@@ -46,7 +46,7 @@ build () {
 	pkgapi_make || exit 1
 	make install DESTDIR=$DESTDIR || exit 1
 
-	# Move twmrc so it is not clobbered on package updates
+	# Move config files so they are not clobbered on package updates
 	mv $DESTDIR/etc/X11/app-defaults/XClock{,.new} || exit 1
 	mv $DESTDIR/etc/X11/app-defaults/XClock-color{,.new} || exit 1
 
