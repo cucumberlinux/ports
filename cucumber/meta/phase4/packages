@@ -76,4 +76,15 @@ xorg-fonts
 xkeyboard-config
 pixman
 xorg-server
+twm
+xterm
+xclock
+xinit
+xf86-video-vesa
+xf86-input-keyboard
+xf86-input-mouse
+libevdev
+xf86-input-evdev
+
+windowmaker
 
