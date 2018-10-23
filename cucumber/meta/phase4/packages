@@ -70,4 +70,10 @@ libdrm
 mesa
 xbitmaps
 xorg-applications
+xcursor-themes
+font-util
+xorg-fonts
+xkeyboard-config
+pixman
+xorg-server
 
