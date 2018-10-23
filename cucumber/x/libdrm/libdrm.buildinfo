@@ -36,8 +36,6 @@ build () {
 	pkgapi_apply_patches || exit 1
 
 	# Do the actual build
-	#sed -i "/pthread-stubs/d" configure.ac 
-	#autoreconf -fiv
 	./configure \
 		--prefix=/usr \
 		--libdir=/usr/lib${LIBDIRSUFFIX} \
