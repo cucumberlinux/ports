@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for php
 
 NAME=php
-VERSION=7.3.0RC2
+VERSION=7.3.0RC4
 # Development Version URL - Delete when switching to the stable release.
 URL=(https://downloads.php.net/~cmb/$NAME-$VERSION.tar.xz https://downloads.php.net/~cmb/$NAME-$VERSION.tar.xz.asc https://mirror.cucumberlinux.com/package_sources/php/7.3/php_manual_en.tar.gz) 
 # Real URL - Uncomment when upgrading to the stable release, and delete the
@@ -91,9 +91,10 @@ build () {
 	sed -i 's@php/includes"@&\ninclude_path = ".:/usr/lib/php"@' $DESTDIR/etc/php.ini.new
 	mv $DESTDIR/etc/pear.conf $DESTDIR/etc/pear.conf.new
 
-	# Move the PHP-FPM config file. The location of this was moved from /etc/php-fpm.conf to
-	# /etc/php-fpm.d/www.conf between PHP 5.6 and PHP 7.2. We'll update this buildscript to use that new
-	# location and add a warning to the old one
+	# Move the PHP-FPM config file. The location of this was moved from
+	# /etc/php-fpm.conf to /etc/php-fpm.d/www.conf between PHP 5.6 and PHP
+	# 7.2. We'll update this buildscript to use that new location and add a
+	# warning to the old one
 	cp -v $DESTDIR/etc/php-fpm.d/www.conf.default $DESTDIR/etc/php-fpm.d/www.conf.new
 	install -m 644 $DESTDIR/etc/php-fpm.conf.new
 	cat > $DESTDIR/etc/php-fpm.conf.new << EOF
