@@ -1,0 +1,6 @@
+# Additional build information 
+
+NAME=libvncserver
+VERSION=
+URL=(https://mirrors.slackware.com/slackware/slackware64-14.2/source/l/libvncserver/LibVNCServer-0.9.10.tar.xz)
+BUILDDEPS=

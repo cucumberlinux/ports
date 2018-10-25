@@ -1,0 +1,6 @@
+# Additional build information 
+
+NAME=glu
+VERSION=
+URL=(https://mirrors.slackware.com/slackware/slackware64-14.2/source/x/glu/glu-9.0.0.tar.xz)
+BUILDDEPS=
