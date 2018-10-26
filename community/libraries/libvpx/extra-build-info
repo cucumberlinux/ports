@@ -1,0 +1,6 @@
+# Additional build information 
+
+NAME=libvpx
+VERSION=
+URL=(https://mirrors.slackware.com/slackware/slackware64-14.2/source/l/libvpx/libvpx-1.5.0.tar.xz)
+BUILDDEPS=
