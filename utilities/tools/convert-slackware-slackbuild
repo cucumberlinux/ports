@@ -98,7 +98,7 @@ use Slackware's URL, make sure you are not using the URL from the -current
 branch as these are highly subject to change.
 EOF
 read URL
-echo URL=$URL >> $slackbuild_dir/extra-build-info
+echo URL="($URL)" >> $slackbuild_dir/extra-build-info
 
 # Set BUILDDEPS
 echo Enter any build time dependencies for $NAME as a space separated list. glibc, gcc and binutils are implicit and do not need to be entered. If there are no build time dependencies, leave this blank and press enter.

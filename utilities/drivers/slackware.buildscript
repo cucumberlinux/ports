@@ -47,7 +47,7 @@ drv_download () {
 	fi
 
 	pushd $OWD
-	for url in $URL; do
+	for url in ${URL[@]}; do
 		if [ -e $(basename $url) ]; then
 			echo $(basename $url) already exists. Skipping. Delete it if you would like to redownload it.
 		else
