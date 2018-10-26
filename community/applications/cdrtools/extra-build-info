@@ -1,0 +1,6 @@
+# Additional build information 
+
+NAME=cdrtools
+VERSION=
+URL=(https://mirrors.slackware.com/slackware/slackware64-14.2/source/ap/cdrtools/cdrtools-3.01.tar.xz https://mirrors.slackware.com/slackware/slackware64-14.2/source/ap/cdrtools/zisofs-tools-1.0.8.tar.bz2)
+BUILDDEPS=
