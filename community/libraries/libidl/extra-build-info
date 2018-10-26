@@ -1,0 +1,6 @@
+# Additional build information 
+
+NAME=libidl
+VERSION=
+URL=(https://mirrors.slackware.com/slackware/slackware64-14.2/source/l/libidl/libIDL-0.8.14.tar.xz)
+BUILDDEPS=
