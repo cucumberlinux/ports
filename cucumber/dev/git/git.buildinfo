@@ -47,8 +47,9 @@ build () {
 	make install DESTDIR=$DESTDIR || exit 1
 
 	# Install the documentation
-	tar -xf $OWD/git-manpages-${VERSION}.tar.xz \
-		    -C $DESTDIR/usr/share/man --no-same-owner --no-overwrite-dir
+	mkdir -p $DESTDIR/usr/share/man
+	tar -xf $OWD/git-manpages-${VERSION}.tar.xz -C $DESTDIR/usr/share/man \
+	      --no-same-owner --no-overwrite-dir || exit 1
 	mkdir -vp   $DESTDIR/usr/share/doc/git-${VERSION} 
 	tar   -xf   $OWD/git-htmldocs-${VERSION}.tar.xz \
 	      -C    $DESTDIR/usr/share/doc/git-${VERSION} \
