@@ -74,9 +74,10 @@ install -m 755 -d "$PORTSDIR" -o $PORTSUSER -g 999 || exit 1
 
 echo "
 Setting up symlinks and configuration for ports utilities."
-ln -s "../ports/utilities/tools/portmake" "$ROOT/usr/bin/" || exit 1
-install -o root -m 644 "$PORTSDIR/utilities/templates/portmake.conf" "$ROOT/etc/" || exit 1
-sed -i "$ROOT/etc/portmake.conf" -e "s/PRIVSEP_USER=.*/PRIVSEP_USER=$PORTSUSER/g" || exit 1
+ln -s "../ports/utilities/tools/portmake" "$ROOT/usr/bin/" 
+ln -s "../../../ports/utilities/documentation/man/man8/portmake.8" "$ROOT/usr/share/man/man8/" 
+install -o root -m 644 "$PORTSDIR/utilities/templates/portmake.conf" "$ROOT/etc/" 
+sed -i "$ROOT/etc/portmake.conf" -e "s/PRIVSEP_USER=.*/PRIVSEP_USER=$PORTSUSER/g" 
 
 echo "
 All done"
