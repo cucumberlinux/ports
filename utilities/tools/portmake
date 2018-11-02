@@ -35,6 +35,10 @@ ENABLED_REPOSITORIES=(cucumber community)
 # tree.
 EXCLUDE_PACKAGE=()
 
+# The unprivileged user to run privilege separation tasks as. This user must
+# have write access to the ports tree.
+PRIVSEP_USER=portuser
+
 # A string to prefix the build number with for all packages built in the ports
 # system. Note the the `update-all` option will update packages only if their
 # build prefix matches this.
@@ -111,6 +115,7 @@ Exit Codes:
 3	Failed to verify source
 4	Failed to build package
 5	Failed to install package
+6	Invalid configuration
 
 Influential Environment Variables:
 BUILD		This variable will be appended to the end of the build number
@@ -246,7 +251,7 @@ portmake_download () {
 # Download the source tarballs and stop; do not verify their integrity.
 portmake_download_only () {
 	echo -e ${COLOR_INFO}Downloading source for ${package}${COLOR_NORMAL}
-	eval $package_dir/${package}.buildscript download || exit 2
+	sudo -u $PRIVSEP_USER $package_dir/${package}.buildscript download || exit 2
 }
 
 # Download the source tarballs and stop; do not verify their integrity.
@@ -317,7 +322,7 @@ portmake_update_all () {
 # Verify the integrity of the source tarballs and stop.
 portmake_verify_only () {
 	echo -e ${COLOR_INFO}Verifying integrity of source for ${package}${COLOR_NORMAL}
-	eval $package_dir/${package}.buildscript verify || exit 3
+	sudo -u $PRIVSEP_USER $package_dir/${package}.buildscript verify || exit 3
 }
 
 # Main function
@@ -407,5 +412,14 @@ main () {
 			;;
 	esac
 }
+
+# Check that privsep user exists
+if [ -z "$(id -u $PRIVSEP_USER 2> /dev/null)" ]; then
+	cat << EOF 
+Privilege separation user $PRIVSEP_USER does not exist. Either add the user or
+edit /etc/portmake.conf to use a different user.
+EOF
+	exit 6
+fi
 
 main $@

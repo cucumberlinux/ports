@@ -44,3 +44,8 @@ dependencies). Information on using portmake can be obtained by running
 `portmake help`. Documentation on how to build, install and update packages
 using portmake can be found in ports/utilities/documentation/building-packages.
 
+§ portstrap
+Automates the process of cloning and initially setting up the ports tree. It is
+entirely self contained; all you need do to set up the ports tree on a new
+system is copy the portstrap script and run it.
+

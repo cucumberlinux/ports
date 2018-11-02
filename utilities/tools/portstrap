@@ -1,0 +1,83 @@
+#!/bin/bash
+
+# Copyright 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Allow the user to specify a different root directory.
+ROOT=${ROOT:-}
+PORTSDIR="$ROOT/usr/ports"
+
+# The default location to clone the ports tree from.
+PORTSURL='https://github.com/cucumberlinux/ports.git'
+
+# The user who can write to the ports tree. Default to the first unprivileged
+# user, or root if there is no unprivileged user.
+PORTSUSER=$(id -nu 1000)
+PORTSUSER=${PORTSUSER:-root}
+
+if [ $(id -u) -ne 0 ]; then
+	echo "$0 must be run as root."
+	exit 1
+fi
+
+if [ -e "$PORTSDIR" ]; then
+	cat << EOF
+$PORTSDIR already exists.
+If you wish to recreate the ports tree, delete
+$PORTSDIR first and then rerun this script.
+EOF
+	exit 1
+fi
+
+echo -n "
+Choose the location to clone the ports tree from, or press enter to accept the
+default. If you are not planning on contributing the the ports tree, it is safe
+to accept the default. If you are, you may want to enter the URL for your own
+fork of the ports tree. [$PORTSURL] "
+read NEW_PORTSURL
+PORTSURL=${NEW_PORTSURL:-$PORTSURL}
+
+echo -n "
+Choose the user that will be able to write to and update the ports tree. For
+security reasons, it is strongly suggested that this be an unprivileged user.
+Press enter to accept the default [$PORTSUSER] "
+read NEW_PORTSUSER
+PORTSUSER=${NEW_PORTSUSER:-$PORTSUSER}
+
+echo "
+Cloning ports tree
+	from $PORTSURL
+	into $PORTSDIR
+	writable by $PORTSUSER."
+install -m 755 -d "$PORTSDIR" -o $PORTSUSER -g 999 || exit 1
+(
+	cd "$PORTSDIR/.."
+	sudo -u $PORTSUSER git clone "$PORTSURL" || exit 1
+) || exit 1
+
+echo "
+Setting up symlinks and configuration for ports utilities."
+ln -s "../ports/utilities/tools/portmake" "$ROOT/usr/bin/" || exit 1
+install -o root -m 644 "$PORTSDIR/utilities/templates/portmake.conf" "$ROOT/etc/" || exit 1
+sed -i "$ROOT/etc/portmake.conf" -e "s/PRIVSEP_USER=.*/PRIVSEP_USER=$PORTSUSER/g" || exit 1
+
+echo "
+All done"
+
