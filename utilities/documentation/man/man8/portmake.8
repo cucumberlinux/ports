@@ -1,0 +1,141 @@
+.\" Copyright 2018 Scott Court
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a copy
+.\" of this software and associated documentation files (the "Software"), todeal
+.\" in the Software without restriction, including without limitation the
+.\" rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+.\" sell copies of the Software, and to permit persons to whom the Software is
+.\" furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included in
+.\" all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+.\" AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+.\" IN THE SOFTWARE.
+.TH PORTMAKE 8 2018-11-02 "Cucumber Linux 2.0" "Linux System Administrator's Manual"
+.SH NAME
+portmake \- build and install packages from source
+
+.SH SYNOPSIS
+.B portmake
+ACTION
+[PACKAGE]
+
+.SH DESCRIPTION
+The portmake utility uses a buildscript located in /usr/ports build and install
+a package from source, and optionally allows for recursively building all of a
+package's build time dependencies.
+.PP
+The package argument is optional. If it is not included, portmake will build
+the package in the current directory. If it is included, portmake will build
+that package instead of the one in the current directory. Note that omitting
+this argument requires you to be in a package directory under the /usr/ports
+hierarchy.
+
+.PP
+Most Useful Actions:
+.TP
+\fBinstall\fR
+Install a package.
+.TP
+\fBupdate\fR
+Update an individual package.
+.TP
+\fBupdate-all\fR
+Update all the packages that have been installed from the ports tree.
+
+.PP
+All Supported Actions:
+.TP
+\fBbuild\fR
+Build the package, downloading and verifying the source if necessary.
+.TP
+\fBbuild-only\fR
+Build the package only; do not download the source, verify the source, build
+dependencies or install the built package.
+.TP
+\fBbuild-recursive\fR
+Build and install any build time dependencies. Then build the package,
+downloading and verifying the source if necessary.
+.TP
+\fBcheck-installed\fR
+Checks if this package is already installed. Evaluates to true and exists with
+status 0 if it is; otherwise it evaulates to false and exits with status 1.
+.TP
+\fBcheck-update\fR
+Checks if this package needs to be updated. If any files in the package's
+source directory have been modified since the package was last built, this
+evaluates to true and exits with status 0.  Otherwise, it evaulates to false
+and exists with status 1.
+.TP
+\fBdownload\fR
+Download the source tarballs for a package and verify their integrity.
+.TP
+\fBdownload-only\fR
+Download the source tarballs and stop; do not verify their integrity.
+.TP
+\fBdownload-recursive\fR
+Download the source tarballs for a package and verify their integrity. Also
+recursive download and verify the source tarballs for any dependencies of the
+package.
+.TP
+\fBhelp\fR
+Display a help message.
+.TP
+\fBinstall\fR
+Install the package by running build-recursive to build it, rebuilding the
+package if it is already installed. Additionally install all of its
+dependencies.
+.TP
+\fBinstall-new\fR
+Install the package like the install option, but only if it is not already
+installed.
+.TP
+\fBupdate\fR
+Update the package if it is already installed and check-update evaluates to
+true.
+.TP
+\fBupdate-all\fR
+Update every package in the ports tree as though it had `portmake update` run
+on it.
+.TP
+\fBverify-only\fR
+Verify the integrity of the source tarballs and stop.
+
+.SH EXIT VALUES
+.IP \fB0\fP
+Success
+.IP \fB1\fP
+Invalid arguments
+.IP \fB2\fP
+Failed to download source
+.IP \fB3\fP
+Failed to verify source
+.IP \fB4\fP
+Failed to build package
+.IP \fB5\fP
+Failed to install package
+.IP \fB6\fP
+Invalid configuration
+
+.SH ENVIRONMENT VARIABLES
+.IP \fBBUILD\fP
+The value of this variable will be appended to the end of the build number
+portion of each package built.
+
+.SH FILES
+.nf
+/etc/portmake.conf
+.fi
+
+.SH HISTORY
+Portmake first appeard in Cucumber Linux 2.0.
+
+.SH AUTHOR
+Portmake was written by Scott Court (scott@cucumberlinux.com).
+
