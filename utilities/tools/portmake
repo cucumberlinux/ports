@@ -251,7 +251,7 @@ portmake_download () {
 # Download the source tarballs and stop; do not verify their integrity.
 portmake_download_only () {
 	echo -e ${COLOR_INFO}Downloading source for ${package}${COLOR_NORMAL}
-	sudo -u $PRIVSEP_USER $package_dir/${package}.buildscript download || exit 2
+	su $PRIVSEP_USER -c "$package_dir/${package}.buildscript download" || exit 2
 }
 
 # Download the source tarballs and stop; do not verify their integrity.
@@ -322,7 +322,7 @@ portmake_update_all () {
 # Verify the integrity of the source tarballs and stop.
 portmake_verify_only () {
 	echo -e ${COLOR_INFO}Verifying integrity of source for ${package}${COLOR_NORMAL}
-	sudo -u $PRIVSEP_USER $package_dir/${package}.buildscript verify || exit 3
+	su $PRIVSEP_USER -c "$package_dir/${package}.buildscript verify" || exit 3
 }
 
 # Main function
@@ -418,6 +418,16 @@ if [ -z "$(id -u $PRIVSEP_USER 2> /dev/null)" ]; then
 	cat << EOF 
 Privilege separation user $PRIVSEP_USER does not exist. Either add the user or
 edit /etc/portmake.conf to use a different user.
+EOF
+	exit 6
+fi
+
+# Check that portmake is being run as root. This is necessary or 
+# `su $PRIVSEP_USER` will fail.
+if [ $(id -u) -ne 0 ]; then
+	cat << EOF
+Portmake must be run as root. Portmake will automatically drop privileges when
+possible.
 EOF
 	exit 6
 fi
