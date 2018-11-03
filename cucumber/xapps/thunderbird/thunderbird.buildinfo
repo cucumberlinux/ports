@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for thunderbird
 
 NAME=thunderbird
-VERSION=60.2.1
+VERSION=60.3.0
 URL=(
 	http://ftp.mozilla.org/pub/thunderbird/releases/$VERSION/source/$NAME-$VERSION.source.tar.xz
 	http://ftp.mozilla.org/pub/thunderbird/releases/$VERSION/source/$NAME-$VERSION.source.tar.xz.asc
