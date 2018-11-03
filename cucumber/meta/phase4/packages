@@ -7,6 +7,7 @@
 # tree that are not built in phases 2 or 3. At the end of phase 4, the system
 # is complete.
 
+pickle
 openssh
 fortune
 htop
