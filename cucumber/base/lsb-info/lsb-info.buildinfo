@@ -23,19 +23,32 @@
 # Cucumber Linux Buildinfo for lsb-info
 
 NAME=lsb-info
-# The version for this package is set in the lsb-release file. Do NOT edit this.
-source $OWD/lsb-release
+# The version for this package is set in the distrib-release file. Do NOT edit
+# this.
+source $OWD/distribution-release
 VERSION=$(echo $DISTRIB_RELEASE | sed -e 's/ /_/g')
 
 build () {
-
 
 	# Install the lsb-release
 	mkdir -pv $DESTDIR/etc || exit 1
 	install -m 444 $OWD/lsb-release $DESTDIR/etc/ || exit 1
 
-	# Append the architecture to the lsb-release
-	echo "DISTRIB_ARCH=$CUCARCH" >> $DESTDIR/etc/lsb-release || exit 1
+	# Populate the fields in lsb-release
+	sed -i $DESTDIR/etc/lsb-release \
+		-e "s/%DISTRIB_ID%/$DISTRIB_ID/g" || exit 1
+	sed -i $DESTDIR/etc/lsb-release \
+		-e "s/%DISTRIB_RELEASE%/$DISTRIB_RELEASE/g" || exit 1
+	sed -i $DESTDIR/etc/lsb-release \
+		-e "s/%DISTRIB_CODENAME%/$DISTRIB_CODENAME/g" || exit 1
+	sed -i $DESTDIR/etc/lsb-release \
+		-e "s/%DISTRIB_DESCRIPTION%/$DISTRIB_DESCRIPTION/g" || exit 1
+	sed -i $DESTDIR/etc/lsb-release \
+		-e "s/%DISTRIB_TYPE%/$DISTRIB_TYPE/g" || exit 1
+	sed -i $DESTDIR/etc/lsb-release \
+		-e "s/%DISTRIB_ROLLING_RELEASE%/$DISTRIB_ROLLING_RELEASE/g" || exit 1
+	sed -i $DESTDIR/etc/lsb-release \
+		-e "s/%DISTRIB_ARCH%/$CUCARCH/g" || exit 1
 
 	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
 	# $DESTDIR/install, creating $DESTDIR/install if need be.

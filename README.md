@@ -16,5 +16,8 @@ Contains the source directories for the packages found in the official Cucumber 
 ### /community
 Contains the source directories for additional packages not provided as part of the official binary distribution. These packages are maintained by individual community members and consequentially are held to lower standards than the packages in the /cucumber directory.
 
+### /metadata
+Contains metadata about the ports tree and this version of Cucumber Linux.
+
 ### /utilities
 Contains various utilities for creating, maintaining and modifying ports. Also contains the ports system documentation and templates. This directory does not contain any packages.
