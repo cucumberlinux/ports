@@ -57,8 +57,15 @@ PORTSURL=${NEW_PORTSURL:-$PORTSURL}
 echo -n "
 Choose the user that will be able to write to and update the ports tree. For
 security reasons, it is strongly suggested that this be an unprivileged user.
-Press enter to accept the default [$PORTSUSER] "
+Press enter to accept the default, or enter a user [$PORTSUSER] "
 read NEW_PORTSUSER
+
+while [ -z "$(id -u $NEW_PORTSUSER 2> /dev/null)" ]; do
+	echo -n "
+User account $NEW_PORTSUSER does not exist. Please enter a valid user account,
+or press enter to accept the default [$PORTSUSER] "
+	read NEW_PORTSUSER
+done
 PORTSUSER=${NEW_PORTSUSER:-$PORTSUSER}
 
 echo "
