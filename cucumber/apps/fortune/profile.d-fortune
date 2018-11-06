@@ -1,0 +1,5 @@
+# If the user has installed fortune, display a random Bible verse
+if [ -e /usr/games/fortune -a -e /usr/share/games/fortunes/bible ]; then
+        fortune fortunes/bible
+fi
+
