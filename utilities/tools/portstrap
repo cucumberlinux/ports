@@ -27,6 +27,9 @@ PORTSDIR="$ROOT/usr/ports"
 # The default location to clone the ports tree from.
 PORTSURL='https://github.com/cucumberlinux/ports.git'
 
+# The default branch (version) of the ports tree to fetch.
+PORTSBRANCH='master'
+
 # The user who can write to the ports tree. Default to the first unprivileged
 # user, or root if there is no unprivileged user.
 PORTSUSER=$(id -nu 1000)
@@ -55,6 +58,14 @@ read NEW_PORTSURL
 PORTSURL=${NEW_PORTSURL:-$PORTSURL}
 
 echo -n "
+Choose the branch of the ports tree to clone. If you are using the latest
+development version of Cucumber Linux, this is usually master. If you are using
+a stable version of Cucumber Linux, this should be the distribution version
+number. Enter the branch, or press enter to accept the default. [$PORTSBRANCH] "
+read NEW_PORTSBRANCH
+PORTSBRANCH=${NEW_PORTSBRANCH:-$PORTSBRANCH}
+
+echo -n "
 Choose the user that will be able to write to and update the ports tree. For
 security reasons, it is strongly suggested that this be an unprivileged user.
 Press enter to accept the default, or enter a user [$PORTSUSER] "
@@ -70,13 +81,14 @@ PORTSUSER=${NEW_PORTSUSER:-$PORTSUSER}
 
 echo "
 Cloning ports tree
+	branch $PORTSBRANCH
 	from $PORTSURL
 	into $PORTSDIR
 	writable by $PORTSUSER."
 install -m 755 -d "$PORTSDIR" -o $PORTSUSER -g 999 || exit 1
 (
 	cd "$PORTSDIR/.."
-	sudo -u $PORTSUSER git clone "$PORTSURL" || exit 1
+	sudo -u $PORTSUSER git clone -b "$PORTSBRANCH" "$PORTSURL" || exit 1
 ) || exit 1
 
 echo "

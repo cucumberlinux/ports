@@ -80,6 +80,7 @@ popt
 efivar
 efibootmgr
 glibc-zoneinfo
+libressl
 linux
 lsb-info
 
