@@ -251,7 +251,7 @@ portmake_download () {
 # Download the source tarballs and stop; do not verify their integrity.
 portmake_download_only () {
 	echo -e ${COLOR_INFO}Downloading source for ${package}${COLOR_NORMAL}
-	su $PRIVSEP_USER -c "$package_dir/${package}.buildscript download" || exit 2
+	sudo -u $PRIVSEP_USER $package_dir/${package}.buildscript download || exit 2
 }
 
 # Download the source tarballs and stop; do not verify their integrity.
@@ -322,7 +322,7 @@ portmake_update_all () {
 # Verify the integrity of the source tarballs and stop.
 portmake_verify_only () {
 	echo -e ${COLOR_INFO}Verifying integrity of source for ${package}${COLOR_NORMAL}
-	su $PRIVSEP_USER -c "$package_dir/${package}.buildscript verify" || exit 3
+	sudo -u $PRIVSEP_USER $package_dir/${package}.buildscript verify || exit 3
 }
 
 # Main function
