@@ -51,6 +51,10 @@ build () {
 	cd $DESTDIR/usr/share/games/fortunes
 	tar -xf "$OWD/fortune-bible.tar.xz"
 
+	# Add a profile.d hook to print a fortune
+	install -d $DESTDIR/etc/profile.d
+	install -m 755 $OWD/profile.d-fortune $DESTDIR/etc/profile.d/fortune
+
 	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
 	# $DESTDIR/install, creating $DESTDIR/install if need be.
 	pkgapi_copy_package_scripts
