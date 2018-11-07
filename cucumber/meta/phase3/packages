@@ -18,7 +18,7 @@ curl
 cacertificates
 
 # Build the additional kernel firmware. Some wireless cards require this to
-# work. Also build git; it's a built time dependency of linux-firmware.
+# work. Also build git; it's a build time dependency of linux-firmware.
 git
 linux-firmware
 

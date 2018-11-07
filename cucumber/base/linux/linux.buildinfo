@@ -91,7 +91,7 @@ EOF
 	cp "$OWD/config-$CUCARCH" .config || exit 1
 
 	# Do the actual build, using kernel_gcc to mitigate against Spectre v2
-	make -j $MAXJOBS || make || exit 1
+	pkgapi_make || exit 1
 
 	# Install the modules
 	mkdir -pv $DESTDIR/lib/modules/$VERSION
