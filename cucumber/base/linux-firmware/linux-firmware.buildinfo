@@ -23,14 +23,36 @@
 # Cucumber Linux Buildinfo for linux-firmware
 
 NAME=linux-firmware
-VERSION=$(date --iso-8601 | sed s/-//g)
+VERSION=$(echo $OWD/linux-firmware-*.tar.xz | rev | cut -d / -f 1 | cut -d . -f 3- | rev | cut -d - -f 3-)
 URL=()
 BUILDDEPS=(git)
 
-build () {
+download () {
+
+	if [ -e $OWD/linux-firmware-*.tar.xz ]; then
+		echo $OWD/linux-firmware-*.tar.xz already exists. Delete it if you wish to redownload the sources.
+		return
+	fi
+
+	NEWVERSION=$(date --iso-8601 | sed s/-//g)
 
 	# Clone the git repository
-	git clone git://git.kernel.org/pub/scm/linux/kernel/git/dwmw2/linux-firmware.git || exit 1
+	if [ -e /tmp/$$ ]; then
+		rm /tmp/$$ -r
+	fi
+	mkdir /tmp/$$
+	cd /tmp/$$
+	git clone git://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git || return 1
+	tar -cJf $OWD/$NAME-$VERSION.tar.xz linux-firmware || return 1
+
+}
+
+build () {
+
+	# Extract the sources
+	tar -xJf $OWD/$NAME-$VERSION.tar.xz || exit 1
+
+	# Clean up the git repository
 	find . -name ".git*" -exec rm -rf "{}" \;
 	chown -R root:root .
 
