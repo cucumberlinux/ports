@@ -43,7 +43,7 @@ download () {
 	mkdir /tmp/$$
 	cd /tmp/$$
 	git clone git://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git || return 1
-	tar -cJf $OWD/$NAME-$VERSION.tar.xz linux-firmware || return 1
+	tar -cJf $OWD/$NAME-$NEWVERSION.tar.xz linux-firmware || return 1
 
 }
 
