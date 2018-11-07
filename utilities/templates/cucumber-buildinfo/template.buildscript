@@ -31,6 +31,8 @@
 DRV_VERSION=0.0.6
 
 # Changelog
+# 0.0.7   Changed the download function so a custom download function will
+#         always run first.
 # 0.0.6   Added support for a custom 'download' function in buildinfos, much
 #         like the ability to have a custom 'verify' function.
 # 0.0.5   Enabled following redirects when downloading the source (added the -L
@@ -109,6 +111,16 @@ BASENAME=$( basename $0 | rev | cut -d . -f 2- | rev )
 
 # Downloads the source for this package
 drv_download () {
+	# Run the 'download' function if it exists
+	if [ "$(type -t download)" == "function" ]; then
+		download
+		STATUS=$?
+		if [ $STATUS -ne 0 ]; then
+			echo "Download failed ('download' returned $STATUS)"
+			exit 1
+		fi
+	fi
+
 	if [ -z "$URL" ]; then
 		echo "Warning downloading source for $BASENAME: no URL is present in ${BASENAME}.buildinfo"
 		return
@@ -124,15 +136,6 @@ drv_download () {
 		fi
 	done
 
-	# Run the 'download' function if it exists
-	if [ "$(type -t download)" == "function" ]; then
-		download
-		STATUS=$?
-		if [ $STATUS -ne 0 ]; then
-			echo "Download failed ('download' returned $STATUS)"
-			exit 1
-		fi
-	fi
 	popd
 }
 
