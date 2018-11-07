@@ -28,7 +28,7 @@
 ################################################################################
 
 # Driver Version
-DRV_VERSION=0.0.6
+DRV_VERSION=0.0.7
 
 # Changelog
 # 0.0.7   Changed the download function so a custom download function will
