@@ -1,0 +1,4 @@
+# The following packages have been removed in Cucumber Linux 2.0:
+openssl
+vim
+
