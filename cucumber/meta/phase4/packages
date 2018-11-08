@@ -37,7 +37,6 @@ freetype
 fontconfig
 libarchive
 cmake
-poppler
 # TODO: put this AFTER Cmake. It may also require some further work to get it
 # to build during a Cucumber Linux from Scratch build.
 neovim
@@ -47,6 +46,9 @@ apache
 libxml2
 php
 sqlite
+nspr
+nss
+poppler
 mariadb
 rsync
 libpng
