@@ -25,7 +25,7 @@
 NAME=xcb-util-cursor
 VERSION=0.1.2
 URL=(https://xcb.freedesktop.org/dist/$NAME-$VERSION.tar.bz2)
-BUILDDEPS=(xcb-util-renderutil)
+BUILDDEPS=(xcb-util-renderutil xcb-util-image)
 
 build () {
 

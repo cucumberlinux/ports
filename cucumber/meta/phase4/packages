@@ -58,10 +58,10 @@ libXau
 libXdmcp
 xcb-proto
 xcb-util-renderutil
+xcb-util-image
 xcb-util-cursor
 xcb-util-wm
 xcb-util-keysyms
-xcb-util-image
 xcb-util
 xorg-libraries
 libxcb 
