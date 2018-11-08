@@ -25,7 +25,7 @@
 NAME=poppler
 VERSION=0.68.0
 URL=(https://poppler.freedesktop.org/$NAME-$VERSION.tar.xz)
-BUILDDEPS=(cmake fontconfig)
+BUILDDEPS=(cmake fontconfig nss)
 
 build () {
 
