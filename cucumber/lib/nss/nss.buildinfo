@@ -1,0 +1,104 @@
+#!/bin/bash
+
+# Copyright 2017, 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for nss
+
+NAME=nss
+VERSION=3.40
+URL_VERSION=$(echo $VERSION | sed -e 's/\./_/g')
+URL=(https://archive.mozilla.org/pub/security/nss/releases/NSS_${URL_VERSION}_RTM/src/$NAME-$VERSION.tar.gz)
+BUILDDEPS=(nspr)
+
+build () {
+
+	tar -xf "$OWD/$NAME-$VERSION.tar.gz" || exit 1
+	cd $NAME-$VERSION/nss || exit 1
+
+	# Apply any patches located in $OWD/patches
+	pkgapi_apply_patches || exit 1
+
+	# Do the actual build
+	# This package does not support parallel builds
+	make -j1 BUILD_OPT=1 \
+		NSPR_INCLUDE_DIR=/usr/include/nspr \
+		USE_SYSTEM_ZLIB=1 \
+		ZLIB_LIBS=-lz \
+		\
+		$([ $CUCARCH = x86_64 ] && echo USE_64=1) \
+		$([ -f /usr/include/sqlite3.h ] && echo NSS_USE_SYSTEM_SQLITE=1) || exit 1
+
+	# Install
+	set -e
+	mkdir -p $DESTDIR/usr/{bin,lib${LIBDIRSUFFIX},include/nss}
+	cd ../dist/$(uname -s)*
+		cp -pL bin/{certutil,cmsutil,crlutil,modutil,pk12util,shlibsign,signtool,signver,ssltap} $DESTDIR/usr/bin/
+		cp -pL lib/* $DESTDIR/usr/lib${LIBDIRSUFFIX}/
+		chmod 755 $DESTDIR/usr/lib${LIBDIRSUFFIX}/*.so*
+		cp -rpL ../public/nss/*.h $DESTDIR/usr/include/nss/
+		# Remove some things we do not need:
+		rm -f $DESTDIR/usr/bin/*.so
+		rm -f $DESTDIR/usr/lib${LIBDIRSUFFIX}/*.a
+		cp -L lib/libcrmf.a $DESTDIR/usr/lib${LIBDIRSUFFIX}/ # yes, put this one back
+	cd ../..
+
+	cd nss/cmd/smimetools
+		cp -a smime $DESTDIR/usr/bin/
+		chmod 0755 $DESTDIR/usr/bin/smime 
+		sed -i -e 's#/usr/local/bin#/usr/bin#g' $DESTDIR/usr/bin/smime
+	cd ../..
+
+	# Install nss-config:
+	sed -e "s,@prefix@,/usr,g" \
+		-e "s,@MOD_MAJOR_VERSION@,$(printf $VERSION | cut -d. -f1),g" \
+		-e "s,@MOD_MINOR_VERSION@,$(printf $VERSION | cut -d. -f2),g" \
+		-e "s,@MOD_PATCH_VERSION@,$(printf $VERSION | cut -d. -f3),g" \
+		$OWD/nss-config.in > $DESTDIR/usr/bin/nss-config
+	chmod 755 $DESTDIR/usr/bin/nss-config
+
+	# Install a file for pkgconfig
+	mkdir -pv $DESTDIR/usr/lib${LIBDIRSUFFIX}/pkgconfig
+	cat <<EOT > $DESTDIR/usr/lib${LIBDIRSUFFIX}/pkgconfig/nss.pc 
+prefix=/usr
+exec_prefix=\${prefix}
+libdir=/usr/lib${LIBDIRSUFFIX}
+includedir=\${prefix}/include/nss
+
+Name: NSS
+Description: Network Security Services
+Version: $VERSION
+Requires: nspr sqlite3
+Libs: -L\${libdir} -lnss3 -lsmime3 -lssl3 -lsoftokn3  -lnssutil3
+Cflags: -I\${includedir}
+EOT
+
+	set +e
+
+	# Strip all of the binaries and libraries in $DESTDIR/ of their
+	# debugging symbols.
+	pkgapi_strip
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+}
+
