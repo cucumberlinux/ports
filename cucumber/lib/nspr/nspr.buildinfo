@@ -26,7 +26,6 @@ NAME=nspr
 VERSION=4.20
 URL=(https://archive.mozilla.org/pub/$NAME/releases/v$VERSION/src/$NAME-${VERSION}.tar.gz)
 BUILDDEPS=()
-echo $URL
 
 build () {
 
