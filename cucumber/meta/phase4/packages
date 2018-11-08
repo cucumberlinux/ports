@@ -35,6 +35,7 @@ tcpdump
 iptables
 freetype
 fontconfig
+libarchive
 cmake
 poppler
 # TODO: put this AFTER Cmake. It may also require some further work to get it
@@ -46,7 +47,6 @@ apache
 libxml2
 php
 sqlite
-libarchive
 mariadb
 rsync
 libpng
