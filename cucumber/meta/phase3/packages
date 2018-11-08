@@ -32,3 +32,7 @@ libksba
 npth
 gnupg
 
+# Build sudo. Portmake depends on sudo in order for privilege separation to
+# work.
+sudo
+
