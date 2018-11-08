@@ -24,7 +24,11 @@
 
 NAME=liblinear
 VERSION=220
-URL=(https://github.com/cjlin1/$NAME/archive/v$VERSION/$NAME-$VERSION.tar.gz)
+URL=(https://mirror.cucumberlinux.com/package_sources/$NAME/$NAME-$VERSION.tar.gz)
+# This is the "upstream" URL, but it appears to have been altered post release
+# and integrity verification is now failing, so we will not trust it and use
+# our verified version instread.
+#URL=(https://github.com/cjlin1/$NAME/archive/v$VERSION/$NAME-$VERSION.tar.gz)
 BUILDDEPS=()
 
 build () {
