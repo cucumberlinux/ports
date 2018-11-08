@@ -37,8 +37,6 @@ freetype
 fontconfig
 libarchive
 cmake
-# TODO: put this AFTER Cmake. It may also require some further work to get it
-# to build during a Cucumber Linux from Scratch build.
 neovim
 apr
 apr-util
@@ -46,9 +44,6 @@ apache
 libxml2
 php
 sqlite
-nspr
-nss
-poppler
 mariadb
 rsync
 libpng
@@ -91,4 +86,10 @@ libevdev
 xf86-input-evdev
 
 windowmaker
+
+# TODO poppler was moved to much later in the build process. Add its
+# dependencies before it. 
+nspr
+nss
+#poppler
 
