@@ -25,7 +25,7 @@
 NAME=iputils
 VERSION=s20161105
 URL=(https://github.com/$NAME/$NAME/archive/$VERSION.tar.gz)
-BUILDDEPS=()
+BUILDDEPS=(nettle)
 
 build () {
 
