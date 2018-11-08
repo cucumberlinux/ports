@@ -25,7 +25,7 @@
 NAME=fortune
 TARNAME=bsd-games
 VERSION=2.13
-URL=(http://mirror.cucumberlinux.com/package_sources/$TARNAME/$TARNAME-$VERSION.tar.bz2)
+URL=(http://mirror.cucumberlinux.com/package_sources/$TARNAME/$TARNAME-$VERSION.tar.bz2 http://mirror.cucumberlinux.com/package_sources/$TARNAME/fortune-bible.tar.xz)
 BUILDDEPS=()
 
 build () {
