@@ -29,7 +29,7 @@ BUILDDEPS=()
 
 build () {
 
-	tar -xf "$OWD/$NAME-$VERSION.tar.gz" || exit 1
+	tar -xf "$OWD/$VERSION.tar.gz" || exit 1
 	cd $NAME-$VERSION || exit 1
 
 	# Apply any patches located in $OWD/patches
