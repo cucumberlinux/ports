@@ -22,6 +22,7 @@ unrar
 unzip
 zip
 libffi
+nettle
 iputils
 whois
 links
