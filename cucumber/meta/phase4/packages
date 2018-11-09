@@ -91,7 +91,7 @@ windowmaker
 
 # TODO poppler was moved to much later in the build process. Add its
 # dependencies before it. 
-nspr
-nss
+#nspr
+#nss
 #poppler
 
