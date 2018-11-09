@@ -25,7 +25,7 @@
 NAME=xorg-server
 VERSION=1.18.1
 URL=(https://www.x.org/pub/individual/xserver/$NAME-$VERSION.tar.bz2)
-BUILDDEPS=(pixman xorg-fonts)
+BUILDDEPS=(pixman xorg-fonts automake)
 
 build () {
 

@@ -74,6 +74,8 @@ font-util
 xorg-fonts
 xkeyboard-config
 pixman
+autoconf
+automake
 xorg-server
 twm
 xterm
