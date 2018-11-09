@@ -35,6 +35,13 @@ build () {
 	# Apply any patches located in $OWD/patches
 	pkgapi_apply_patches || exit 1
 
+	# Xorg-server requires autotools version 1.15 specifically to build.
+	# Create dummy sumlinks to satisfy this.
+	mkdir -pv $BUILDDIR/tmpbin || exit 1
+	ln -s $(which aclocal) $BUILDDIR/tmpbin/aclocal-1.15 || exit 1
+	ln -s $(which automake) $BUILDDIR/tmpbin/automake-1.15 || exit 1
+	PATH=$PATH:$BUILDDIR/tmpbin
+
 	# Do the actual build
 	./configure \
 		--prefix=/usr \
