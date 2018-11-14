@@ -89,6 +89,11 @@ xf86-input-evdev
 
 windowmaker
 
+# This may need to go later in the build process or be moved
+gptfdisk
+fuse
+ntfs-3g_ntfsprogs
+
 # TODO poppler was moved to much later in the build process. Add its
 # dependencies before it. 
 #nspr
