@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for pickle
 
 NAME=pickle
-VERSION=2.0.0
+VERSION=2.0.1
 URL=(https://github.com/cucumberlinux/$NAME/archive/${VERSION}.tar.gz)
 BUILDDEPS=()
 
@@ -38,6 +38,9 @@ build () {
 
 	# Do the actual build
 	make install DESTDIR=$DESTDIR || exit 1
+
+	# Move the pickle.conf file so it is not clobbered on updates
+	mv $DESTDIR/etc/pickle.conf{,.new} || exit 1
 
 	# Strip all of the binaries and libraries in $DESTDIR/ of their
 	# debugging symbols.
