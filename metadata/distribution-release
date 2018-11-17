@@ -14,7 +14,7 @@ DISTRIB_DESCRIPTION="Scott Court's Cucumber Linux Distribution"
 ####################### DISTRIBUTION VERSION INFORMATION #######################
 
 # The release number of this distribution
-DISTRIB_RELEASE="2.0.alpha.1"
+DISTRIB_RELEASE="2.0"
 
 # The rolling release number. This is usually in the format "M.x", where M is
 # the major version number and x is the literal character x.
