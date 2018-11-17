@@ -27,6 +27,9 @@ NAME=lsb-info
 # this.
 source $OWD/distribution-release
 VERSION=$(echo $DISTRIB_RELEASE | sed -e 's/ /_/g')
+if [ "$DISTRIB_TYPE" != "stable" ]; then
+	VERSION+=".$DISTRIB_TYPE"
+fi
 
 build () {
 
