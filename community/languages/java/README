@@ -1,0 +1,15 @@
+This directory contains the buildscript for building Oracle's Java Runtime and
+Development Environments. It repackages the official Oracle tarballs into
+packages that can be managed using Cucumber Linux's package management tools.
+
+To use this, you'll need to download Oracles' Java tarballs. They can be found
+at https://www.java.com/en/download/linux_manual.jsp. Make sure to get the
+.tar.gz files, not the RPM ones, and make sure to download the correct
+architecture.
+
+Save the downloaded file to the same directory as the buildscript, and then run:
+
+./java.buildscript jre-8u101-linux-x64.tar.gz
+
+This will create a Cucumber Linux compatible package in /tmp, which can now be
+installed or upgraded via installpkg or upgradepkg respectively.

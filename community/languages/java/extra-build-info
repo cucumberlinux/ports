@@ -1,0 +1,6 @@
+# Additional build information 
+
+NAME=java
+VERSION=
+URL=('@@@@@_SEE_DOWNLOAD_INSTRUCTIONS_IN_README_@@@@@')
+BUILDDEPS=

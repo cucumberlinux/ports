@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+        |-----handy-ruler------------------------------------------------------|
+gptfdisk: gptfdisk (GPT disk maintenance programs)
+gptfdisk:
+gptfdisk: The gptfdisk package is a set of programs for creation and
+gptfdisk: maintenance of GUID Partition Table (GPT) disk drives. A GPT
+gptfdisk: partitioned disk is required for drives greater than 2 TB and is a
+gptfdisk: modern replacement for legacy PC-BIOS partitioned disk drives that
+gptfdisk: use a Master Boot Record (MBR). The main program, gdisk, has an
+gptfdisk: inteface similar to the classic fdisk program. 
+gptfdisk:
+gptfdisk:
+gptfdisk:
