@@ -1,0 +1,48 @@
+#!/bin/sh
+########################################################################
+# Begin gdk-pixbuf
+#
+# Description : Gdk-pixuf cache update script
+#
+# Authors     : Scott Court (Z5T1@Z5T1.com)
+#
+# Version     : Cucumber 1.0
+#
+########################################################################
+
+# Gdk-pixbuf likes to keep a cache of images. This cache needs to be
+# updated frequently, otherwise it causes problems with some graphical
+# applications (namely LXDM, icons and themes). This script ensures
+# that the cache is updated on every boot.
+
+### BEGIN INIT INFO
+# Provides:		gdk-pixbuf
+# Required-Start:
+# Should-Start:
+# Required-Stop:
+# Should-Stop:
+# Default-Start:	S
+# Default-Stop:
+# Short-Description:
+# Description:
+### END INIT INFO
+
+. /lib/lsb/init-functions
+
+case "${1}" in
+   start)
+      log_info_msg "Updating gdk-pixbuf cache..."
+      gdk-pixbuf-query-loaders --update-cache
+      evaluate_retval
+      ;;
+
+   *)
+      echo "Usage: ${0} {start}"
+      exit 1
+      ;;
+esac
+
+exit 0
+
+# End gdk-pixbuf
+
