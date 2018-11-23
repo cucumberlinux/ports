@@ -26,7 +26,7 @@ NAME=pygtk
 VERSION=2.24.0
 MINOR_VERSION=$(echo $VERSION | cut -d . -f 1-2)
 URL=(https://ftp.gnome.org/pub/gnome/sources/pygtk/$MINOR_VERSION/$TARNAME-$VERSION.tar.bz2)
-BUILDDEPS=(gobject-2.0-python2)
+BUILDDEPS=(gobject-2.0-python2 pycairo)
 
 build () {
 
@@ -36,14 +36,14 @@ build () {
 
 	# Apply any patches located in $OWD/patches
 	pkgapi_apply_patches || exit 1
-		#--libdir=/usr/lib${LIBDIRSUFFIX} \
-		#--sysconfdir=/etc \
-		#--localstatedir=/var \
-		#--disable-static \
 
 	# Do the actual build
 	./configure \
 		--prefix=/usr \
+		--libdir=/usr/lib${LIBDIRSUFFIX} \
+		--sysconfdir=/etc \
+		--localstatedir=/var \
+		--disable-static \
 		--build=$CUCARCH-cucumber-linux || exit 1
 	# Use pkgapi_make instead of make in order to handle parallel builds.
 	pkgapi_make || exit 1
