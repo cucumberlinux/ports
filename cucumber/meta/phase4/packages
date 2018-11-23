@@ -94,6 +94,8 @@ gptfdisk
 fuse
 ntfs-3g_ntfsprogs
 
+vte
+
 # TODO poppler was moved to much later in the build process. Add its
 # dependencies before it. 
 #nspr
