@@ -102,6 +102,16 @@ libjpeg-turbo
 libtiff
 shared-mime-info
 gdk-pixbuf
+cairo
+harfbuzz
+pango
+gtk+
+gtk+3
+leafpad
+alsa-lib
+rustc
+firefox
+thunderbird
 
 # TODO uncomment this later
 #vte
