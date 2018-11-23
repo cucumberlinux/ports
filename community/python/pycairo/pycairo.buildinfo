@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for pycairo
 
 NAME=pycairo
-VERSION=1.17.1
+VERSION=1.10.0
 URL=(https://github.com/pygobject/$NAME/releases/download/v$VERSION/$NAME-$VERSION.tar.gz)
 BUILDDEPS=(cairo)
 
@@ -36,8 +36,12 @@ build () {
 	# Apply any patches located in $OWD/patches
 	pkgapi_apply_patches || exit 1
 
-	python2 setup.py build
-	python2 setup.py install --skip-build --root=$DESTDIR --optimize=1
+	# Do the actual build
+	./waf configure \
+		--prefix=/usr \
+		--libdir=/usr/lib${LIBDIRSUFFIX} || exit 1
+	./waf build || exit 1
+	./waf install --destdir=$DESTDIR || exit 1
 
 	# Strip all of the binaries and libraries in $DESTDIR/ of their
 	# debugging symbols.
