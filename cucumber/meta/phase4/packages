@@ -38,6 +38,7 @@ fontconfig
 libarchive
 cmake
 neovim
+screen
 apr
 apr-util
 apache
