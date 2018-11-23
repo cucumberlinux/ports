@@ -95,6 +95,14 @@ gptfdisk
 fuse
 ntfs-3g_ntfsprogs
 
+glib
+atk
+yasm
+libjpeg-turbo
+libtiff
+shared-mime-info
+gdk-pixbuf
+
 # TODO uncomment this later
 #vte
 
