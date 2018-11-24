@@ -106,6 +106,8 @@ cairo
 harfbuzz
 pango
 gtk+
+libepoxy
+at-spi2-at
 gtk+3
 leafpad
 alsa-lib
