@@ -1,0 +1,64 @@
+#!/bin/sh
+########################################################################
+# Begin dbus
+#
+# Description : Starts the D-Bus messaging daemon
+#
+# Authors     : Scott Court (Z5T1@Z5T1.com)
+#
+# Version     : Cucumber 1.0
+#
+########################################################################
+
+### BEGIN SYMLINK INFO
+# This section controls the name of the symlinks that are created in
+# /etc/rc.d/rc?.d by chkconfig and the system init setup script.
+# START_LINK_NAME	S29dbus
+# KILL_LINK_NAME	K71dbus
+### END SYMLINK INFO
+
+### BEGIN INIT INFO
+# Provides:		dbus
+# Default-Start: 2345
+# Default-Stop: 016
+### END INIT INFO
+
+. /lib/lsb/init-functions
+
+case "$1" in
+   start)
+      log_info_msg "Starting the D-Bus Messagebus Daemon..."
+      mkdir -p /run/dbus
+      /usr/bin/dbus-uuidgen --ensure
+      start_daemon /usr/bin/dbus-daemon --system
+      evaluate_retval
+      ;;
+
+   stop)
+      log_info_msg "Stopping the D-Bus Messagebus Daemon..."
+      killproc /usr/bin/dbus-daemon
+      evaluate_retval
+      rm -f $socket $pidfile
+      ;;
+
+   restart)
+      $0 stop
+      sleep 1
+      $0 start
+      ;;
+
+   status)
+      statusproc /usr/bin/dbus-daemon
+      ;;
+
+   *)
+      echo "Usage: $0 {start|stop|restart|status}"
+      exit 1
+      ;;
+esac
+
+
+exit 0
+
+# End dbus
+
