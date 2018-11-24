@@ -107,7 +107,9 @@ harfbuzz
 pango
 gtk+
 libepoxy
-at-spi2-at
+dbus
+at-spi2-core
+at-spi2-atk
 gtk+3
 leafpad
 alsa-lib
