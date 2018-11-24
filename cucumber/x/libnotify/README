@@ -1,0 +1,2 @@
+Unfortunately, all modern versions of libnotify require GTK+3 to build, which is not supported on
+Cucumber Linux. Therefore, we have to use the ancient 0.5.2 version from 2010.
