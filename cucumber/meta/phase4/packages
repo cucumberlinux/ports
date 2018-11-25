@@ -114,6 +114,9 @@ gtk+3
 leafpad
 alsa-lib
 rustc
+libnotify
+nspr
+nss
 firefox
 thunderbird
 
@@ -122,7 +125,5 @@ thunderbird
 
 # TODO poppler was moved to much later in the build process. Add its
 # dependencies before it. 
-#nspr
-#nss
 #poppler
 
