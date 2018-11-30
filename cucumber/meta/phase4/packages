@@ -121,6 +121,9 @@ firefox
 thunderbird
 
 # TODO uncomment this later
+# pinentry
+
+# TODO uncomment this later
 #vte
 
 # TODO poppler was moved to much later in the build process. Add its
