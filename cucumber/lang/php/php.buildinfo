@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for php
 
 NAME=php
-VERSION=7.3.0RC5
+VERSION=7.3.0RC6
 # Development Version URL - Delete when switching to the stable release.
 URL=(https://downloads.php.net/~cmb/$NAME-$VERSION.tar.xz https://downloads.php.net/~cmb/$NAME-$VERSION.tar.xz.asc https://mirror.cucumberlinux.com/package_sources/php/7.3/php_manual_en.tar.gz) 
 # Real URL - Uncomment when upgrading to the stable release, and delete the
