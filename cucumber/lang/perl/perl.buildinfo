@@ -24,13 +24,13 @@
 # Cucumber Linux Buildinfo for perl
 
 NAME=perl
-VERSION=5.28.0
-URL=(https://www.cpan.org/src/5.0/$NAME-$VERSION.tar.gz)
+VERSION=5.28.1
+URL=(https://www.cpan.org/src/5.0/$NAME-$VERSION.tar.xz)
 BUILDDEPS=()
 
 build () {
 
-	tar -xf "$OWD/$NAME-$VERSION.tar.gz" || exit 1
+	tar -xf "$OWD/$NAME-$VERSION.tar.xz" || exit 1
 	cd $NAME-$VERSION || exit 1
 
 	# This version of Perl now builds the Compress::Raw::Zlib and
