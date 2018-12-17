@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for firefox
 
 NAME=firefox
-VERSION=60.3.0esr
+VERSION=60.4.0esr
 URL=(
 https://ftp.mozilla.org/pub/firefox/releases/$VERSION/source/$NAME-$VERSION.source.tar.xz{,.asc}
 https://ftp.gnu.org/gnu/autoconf/autoconf-2.13.tar.gz
