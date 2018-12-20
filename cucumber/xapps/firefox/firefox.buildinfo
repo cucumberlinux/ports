@@ -23,8 +23,11 @@
 # Cucumber Linux Buildinfo for firefox
 
 NAME=firefox
-VERSION=60.3.0esr
-URL=(https://ftp.mozilla.org/pub/firefox/releases/$VERSION/source/$NAME-$VERSION.source.tar.xz{,.asc})
+VERSION=60.4.0esr
+URL=(
+https://ftp.mozilla.org/pub/firefox/releases/$VERSION/source/$NAME-$VERSION.source.tar.xz{,.asc}
+https://ftp.gnu.org/gnu/autoconf/autoconf-2.13.tar.gz
+)
 BUILDDEPS=(gtk+ gtk+3 libnotify nss alsa-lib rustc unzip yasm python2)
 
 verify () {
@@ -47,7 +50,7 @@ build () {
 	#
 	# Thanks to Patrick Volkerding of Slackware Linux for this workaround
 	# script.
-	( cd $OWD/autoconf ; ./autoconf.build )
+	( cd $OWD/autoconf ; ./autoconf.build ) || exit 1
 	PATH=/tmp/autoconf-tmp/usr/bin:$PATH
 
 	# Do the actual build

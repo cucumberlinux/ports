@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for rustc
 
 NAME=rustc
-VERSION=1.26.0
+VERSION=1.29.1
 URL=(https://static.rust-lang.org/dist/$NAME-$VERSION-src.tar.gz)
 BUILDDEPS=(cmake python3)
 
@@ -57,9 +57,6 @@ docdir = "share/doc/$NAME-$VERSION"
 [rust]
 channel = "stable"
 rpath = false
-
-# get reasonably clean output from the test harness
-quiet-tests = true
 
 # disable codegen tests
 codegen-tests = false

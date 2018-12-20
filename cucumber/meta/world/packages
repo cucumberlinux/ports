@@ -1,0 +1,9 @@
+# This metapackage builds the entirety of Cucumber Linux. It attempts to follow
+# the original build order from Cucumber Linux 1.0 as closely as possible. The
+# actual Cucumber Linux 1.0 build order can be found at:
+# http://mirror.cucumberlinux.com/cucumber/cucumber-1.0/CHANGELOG
+
+phase2
+phase3
+phase4
+

@@ -144,7 +144,7 @@ portmake_build_only () {
 	eval OUTDIR=$OUTDIR BUILD=$PKG_BUILD $package_dir/${package}.buildscript build || exit 4
 
 	# Copy the package to the PACKAGE_DIR
-	if [ ! -z "$PACKAGE_DIR" ]; then
+	if [ ! -z "$PACKAGE_DIR" -a ! -z "$(ls -A $OUTDIR)" ]; then
 		if [ ! -d $PACKAGE_DIR/$package_group ]; then
 			mkdir -p $PACKAGE_DIR/$package_group || exit 4
 		fi
@@ -279,7 +279,9 @@ portmake_install_new () {
 # dependencies.
 portmake_install () {
 	portmake_build_recursive
-	upgradepkg --reinstall --install-new $OUTDIR/*.t?z || exit 5
+	if [ ! -z "$(ls -A $OUTDIR)" ]; then
+		upgradepkg --reinstall --install-new $OUTDIR/*.t?z || exit 5
+	fi
 }
 
 # Update the package if it is already installed and check-update evaluates to
@@ -294,7 +296,9 @@ portmake_update () {
 	fi
 
 	portmake_build
-	upgradepkg --reinstall --install-new $OUTDIR/*.t?z || exit 5
+	if [ ! -z "$(ls -A $OUTDIR)" ]; then
+		upgradepkg --reinstall --install-new $OUTDIR/*.t?z || exit 5
+	fi
 }
 
 # Update every package in the ports tree as though it had \`portmake update\`

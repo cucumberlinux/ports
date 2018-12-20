@@ -23,18 +23,15 @@
 # Cucumber Linux Buildinfo for php
 
 NAME=php
-VERSION=7.3.0RC4
-# Development Version URL - Delete when switching to the stable release.
-URL=(https://downloads.php.net/~cmb/$NAME-$VERSION.tar.xz https://downloads.php.net/~cmb/$NAME-$VERSION.tar.xz.asc https://mirror.cucumberlinux.com/package_sources/php/7.3/php_manual_en.tar.gz) 
-# Real URL - Uncomment when upgrading to the stable release, and delete the
-# above line.
-#URL=(http://www.php.net/distributions/$NAME-$VERSION.tar.xz http://www.php.net/distributions/$NAME-$VERSION.tar.xz.asc https://mirror.cucumberlinux.com/package_sources/php/7.3/php_manual_en.tar.gz)
+VERSION=7.3.0
+URL=(
+http://www.php.net/distributions/$NAME-$VERSION.tar.xz
+http://www.php.net/distributions/$NAME-$VERSION.tar.xz.asc
+https://mirror.cucumberlinux.com/package_sources/php/7.3/php_manual_en.tar.gz)
 BUILDDEPS=(libxml2)
 
 verify () {
-	# Uncomment once the PHP 7.3 release keys become available and are
-	# placed in ./autorized_keys.
-        #pkgapi_gpg --verify $NAME-$VERSION.tar.xz.asc || return 1
+        pkgapi_gpg --verify $NAME-$VERSION.tar.xz.asc || return 1
 	true
 }
 
@@ -88,14 +85,16 @@ build () {
 	pkgapi_make || exit 1
 	make install INSTALL_ROOT=$DESTDIR || exit 1
 	install -v -m644 php.ini-production $DESTDIR/etc/php.ini.new
-	sed -i 's@php/includes"@&\ninclude_path = ".:/usr/lib/php"@' $DESTDIR/etc/php.ini.new
+	sed -i 's@php/includes"@&\ninclude_path = ".:/usr/lib/php"@' \
+		$DESTDIR/etc/php.ini.new
 	mv $DESTDIR/etc/pear.conf $DESTDIR/etc/pear.conf.new
 
 	# Move the PHP-FPM config file. The location of this was moved from
 	# /etc/php-fpm.conf to /etc/php-fpm.d/www.conf between PHP 5.6 and PHP
 	# 7.2. We'll update this buildscript to use that new location and add a
 	# warning to the old one
-	cp -v $DESTDIR/etc/php-fpm.d/www.conf.default $DESTDIR/etc/php-fpm.d/www.conf.new
+	cp -v $DESTDIR/etc/php-fpm.d/www.conf.default \
+		$DESTDIR/etc/php-fpm.d/www.conf.new
 	install -m 644 $DESTDIR/etc/php-fpm.conf.new
 	cat > $DESTDIR/etc/php-fpm.conf.new << EOF
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
@@ -114,10 +113,14 @@ EOF
 
 	# Install Documentation
 	install -v -m755 -d /usr/share/doc/php-$VERSION 
-	install -v -m644    CODING_STANDARDS EXTENSIONS INSTALL NEWS README* UPGRADING* php.gif $DESTDIR/usr/share/doc/php-$VERSION &&
-	ln -v -sfn          /usr/lib/php/doc/Archive_Tar/docs/Archive_Tar.txt $DESTDIR/usr/share/doc/php-$VERSION 
-	ln -v -sfn          /usr/lib/php/doc/Structures_Graph/docs $DESTDIR/usr/share/doc/php-$VERSION
-	tar -xvf $OWD/php_manual_en.tar.gz -C /usr/share/doc/php-$VERSION --no-same-owner
+	install -v -m644    CODING_STANDARDS EXTENSIONS INSTALL NEWS README* \
+		UPGRADING* php.gif $DESTDIR/usr/share/doc/php-$VERSION 
+	ln -v -sfn /usr/lib/php/doc/Archive_Tar/docs/Archive_Tar.txt \
+		$DESTDIR/usr/share/doc/php-$VERSION 
+	ln -v -sfn /usr/lib/php/doc/Structures_Graph/docs \
+		$DESTDIR/usr/share/doc/php-$VERSION
+	tar -xvf $OWD/php_manual_en.tar.gz -C /usr/share/doc/php-$VERSION \
+		--no-same-owner
 
 	# PHP sometimes puts junk in the root directory:
 	( cd $DESTDIR

@@ -38,6 +38,7 @@ fontconfig
 libarchive
 cmake
 neovim
+screen
 apr
 apr-util
 apache
@@ -94,9 +95,38 @@ gptfdisk
 fuse
 ntfs-3g_ntfsprogs
 
+glib
+atk
+yasm
+libjpeg-turbo
+libtiff
+shared-mime-info
+gdk-pixbuf
+cairo
+harfbuzz
+pango
+gtk+
+libepoxy
+dbus
+at-spi2-core
+at-spi2-atk
+gtk+3
+leafpad
+alsa-lib
+rustc
+libnotify
+nspr
+nss
+firefox
+thunderbird
+
+# TODO uncomment this later
+# pinentry
+
+# TODO uncomment this later
+#vte
+
 # TODO poppler was moved to much later in the build process. Add its
 # dependencies before it. 
-#nspr
-#nss
 #poppler
 

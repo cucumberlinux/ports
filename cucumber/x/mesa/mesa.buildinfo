@@ -49,6 +49,7 @@ build () {
 		--enable-xa \
 		--enable-gbm \
 		--enable-glx-tls \
+		--disable-llvm-shared-libs \
 		--with-egl-platforms="drm,x11"  \
 		--with-gallium-drivers=i915,nouveau,r300,r600,radeonsi,svga,swrast \
 		--build=$CUCARCH-cucumber-linux || exit 1

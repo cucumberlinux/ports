@@ -23,12 +23,13 @@
 # Cucumber Linux Buildinfo for thunderbird
 
 NAME=thunderbird
-VERSION=60.3.0
+VERSION=60.3.2
 URL=(
 	http://ftp.mozilla.org/pub/thunderbird/releases/$VERSION/source/$NAME-$VERSION.source.tar.xz
 	http://ftp.mozilla.org/pub/thunderbird/releases/$VERSION/source/$NAME-$VERSION.source.tar.xz.asc
+	https://ftp.gnu.org/gnu/autoconf/autoconf-2.13.tar.gz
 )
-BUILDDEPS=(gtk3 zip unzip yasm python2)
+BUILDDEPS=(gtk+3 zip unzip yasm python2)
 
 verify () {
 	pkgapi_gpg --verify $NAME-$VERSION.source.tar.xz.asc || return 1
@@ -46,7 +47,7 @@ build () {
 	#
 	# Thanks to Patrick Volkerding of Slackware Linux for this workaround
 	# script.
-	( cd $OWD/autoconf ; ./autoconf.build )
+	( cd $OWD/autoconf ; ./autoconf.build ) || exit 1
 	PATH=/tmp/autoconf-tmp/usr/bin:$PATH
 
 	# Apply any patches located in $OWD/patches
