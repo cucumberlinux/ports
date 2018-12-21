@@ -29,4 +29,5 @@ portsync: directory_skel
 
 portstrap: directory_skel
 	$(INSTALL) -m 755 tools/portstrap $(DESTDIR)$(BINDIR)/portstrap
+	$(INSTALL) -m 644 documentation/man/man8/portstrap.8 $(DESTDIR)$(MANDIR)/man8/portstrap.8
 
