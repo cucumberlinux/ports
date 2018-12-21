@@ -24,6 +24,7 @@ portmake: directory_skel
 
 portsync: directory_skel
 	$(INSTALL) -m 755 tools/portsync $(DESTDIR)$(BINDIR)/portsync
+	$(INSTALL) -m 644 documentation/man/man8/portsync.8 $(DESTDIR)$(MANDIR)/man8/portsync.8
 	$(INSTALL) -m 644 templates/portsync.conf $(DESTDIR)$(CONFDIR)/portsync.conf
 
 portstrap: directory_skel
