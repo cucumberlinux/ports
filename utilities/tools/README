@@ -49,3 +49,8 @@ Automates the process of cloning and initially setting up the ports tree. It is
 entirely self contained; all you need do to set up the ports tree on a new
 system is copy the portstrap script and run it.
 
+§ portsync
+Automates the process of updating the ports tree. It can update the ports tree
+by 'git pull'ing from the official ports github repository or by rsyncing with
+an official cucumber linux mirror.
+
