@@ -36,3 +36,6 @@ gnupg
 # work.
 sudo
 
+# Install the Port tree utilities. This provides the portmake command.
+portutils
+
