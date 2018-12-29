@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for gnupg
 
 NAME=gnupg
-VERSION=2.2.10
+VERSION=2.2.12
 URL=(https://www.gnupg.org/ftp/gcrypt/$NAME/$NAME-$VERSION.tar.bz2 https://www.gnupg.org/ftp/gcrypt/$NAME/$NAME-$VERSION.tar.bz2.sig)
 BUILDDEPS=(libassuan libgcrypt libgpg-error libksba npth)
 
