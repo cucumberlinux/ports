@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for lxc
 
 NAME=lxc
-VERSION=2.1.1
+VERSION=3.1.0
 URL=(https://linuxcontainers.org/downloads/$NAME/$NAME-$VERSION.tar.gz)
 BUILDDEPS=()
 
@@ -36,8 +36,6 @@ build () {
 	# Apply any patches located in $OWD/patches
 	pkgapi_apply_patches || exit 1
 
-	export PYTHON=/usr/bin/python3
-
 	# Do the actual build
 	./configure \
 		--prefix=/usr \
@@ -45,7 +43,6 @@ build () {
 		--sysconfdir=/etc \
 		--localstatedir=/var \
 		--disable-static \
-		--enable-python \
 		--build=$CUCARCH-cucumber-linux || exit 1
 	# Use pkgapi_make instead of make in order to handle parallel builds.
 	pkgapi_make || exit 1
