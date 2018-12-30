@@ -1,0 +1,108 @@
+#!/bin/bash
+
+# Copyright 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Displays a help message.
+display_help () {
+        cat << EOF
+Usage: $0 [OPTION]
+
+The portsync utility automates the process of updating the ports tree.
+
+Options:
+-g	Updates the ports tree using git.
+-h 	Displays this message.
+-r	Updates the ports tree using rsync.
+-v	Enable verbose output.
+
+EOF
+}
+
+# Updates the ports tree using git.
+portsync_via_git () {
+	if [ ! -d "$ROOT/$PORTS_TREE" ]; then
+		cat << EOF
+$ROOT/$PORTS_TREE does not exist. Please run either 'portsync -r' or
+'portstrap' first to create it. If you do not know which one use, you most
+likely want 'portstrap'.
+EOF
+		return 2
+	fi
+
+	cd "$ROOT/$PORTS_TREE" || return 1
+	sudo -u "$PRIVSEP_USER" git pull || return 1
+}
+
+# Updates the ports tree using rsync.
+portsync_via_rsync () {
+	sudo -u "$PRIVSEP_USER" rsync --delete --progress -rlptD "$RSYNC_REMOTE_LOCATION" "$ROOT/$PORTS_TREE" || return 1
+}
+
+# Allow the user to specify a different root directory.
+ROOT=${ROOT:-}
+CONFIG="$ROOT/etc/portsync.conf"
+
+if [ ! -f "$CONFIG" ]; then
+	echo "Error: $CONFIG does not exist."
+	exit 1
+fi
+
+source "$CONFIG"
+
+while getopts "ghrv" opt; do
+	case $opt in
+		g|git)
+			UPDATE_METHOD=git
+			shift 1
+			;;
+		h|help)
+			display_help
+			exit
+			;;
+		r|rsync)
+			UPDATE_METHOD=rsync
+			shift 1
+			;;
+		v|verbose)
+			VERBOSE=1
+			shift 1
+			;;
+		*)
+			exit 1
+	esac
+done
+
+UPDATE_METHOD=${UPDATE_METHOD:-$DEFAULT_UPDATE_METHOD}
+
+echo "Updating the ports tree via $UPDATE_METHOD"
+case $UPDATE_METHOD in
+	git)
+		portsync_via_git
+		STATUS=$?
+		;;
+	rsync)
+		portsync_via_rsync
+		STATUS=$?
+		;;
+esac
+
+exit $STATUS
+

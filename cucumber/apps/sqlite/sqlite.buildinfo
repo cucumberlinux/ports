@@ -23,8 +23,8 @@
 # Cucumber Linux Buildinfo for sqlite
 
 NAME=sqlite
-VERSION=3.24.0
-TARVERSION=3240000
+VERSION=3.26.0
+TARVERSION=3260000
 RELEASE_YEAR=2018
 URL=(https://sqlite.org/$RELEASE_YEAR/$NAME-autoconf-$TARVERSION.tar.gz https://sqlite.org/$RELEASE_YEAR/$NAME-doc-$TARVERSION.zip)
 BUILDDEPS=(unzip)

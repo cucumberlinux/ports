@@ -1,0 +1,188 @@
+#!/bin/sh
+
+# Slackware build script for wine
+
+# Copyright 2018 Scott Court
+# Copyright 2011 David Woodfall
+# Copyright 2006-2009  Robby Workman  Northport, AL, USA
+# All rights reserved.
+
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+# EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=wine
+VERSION=${VERSION:-3.0.3}
+BUILD=${BUILD:-1}
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+WIN32=${WIN32:-yes}
+WIN64=${WIN64:-no}
+
+# If your video card does not support hardware accelerated OpenGL,
+# then run the script like:   OPENGL=NO ./wine.SlackBuild
+if [ "${OPENGL:-yes}" = "yes" ]; then
+	do_opengl="with"
+else
+	do_opengl="without"
+fi
+
+if [ -z "$ARCH" ]; then
+	case "$(uname -m)" in
+		i?86) ARCH=i586 ;;
+		arm*) ARCH=arm ;;
+		*) ARCH=$(uname -m) ;;
+	esac
+fi
+
+case $ARCH in
+	i586)
+		WIN32=yes
+		WIN64=no
+		;;
+	x86_64)
+		WIN32=no
+		WIN64=yes
+		;;
+esac
+
+if [ "$WIN32" = "no" ] && [ "$WIN64" = "no" ]; then
+	echo "Both 64 and 32 bit builds disabled. Nothing to do."
+	exit 1
+fi
+
+# These should work for anything not specified below
+BUILD_ARCH=$ARCH"-cucumber-linux"
+SLKCFLAGS="-O0"
+
+case "$ARCH" in
+	arm)
+		BUILD_ARCH=$ARCH"-cucumber-linux-gnueabi"
+		;;
+	i?86)
+		# -Os was -O2, fix for:
+		# https://bugs.winehq.org/show_bug.cgi?id=42406
+		# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=78911
+		# https://bugs.gentoo.org/613128
+		SLKCFLAGS="-O0 -march=$ARCH -mtune=i686"
+		;;
+	x86_64)
+		SLKCFLAGS="-O0 -fPIC"
+		LIBDIRSUFFIX="64"
+		;;
+esac
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.xz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+	\( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+	-o -perm 511 \) -exec chmod 755 {} \; -o \
+	\( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+	-o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+# Fix for flex
+patch -p1 --verbose < $CWD/0001-winhlp32-Workaround-a-bug-in-Flex.patch
+
+# Remove -fPIC for i?86 or the build will hang
+if [ "$ARCH" == "i?86" ]; then
+	patch -p1 --verbose < $CWD/x86_remove_fpic.patch
+fi
+
+if [ "$WIN64" = "yes" ]; then
+	wine64="--with-wine64=../wine64"
+	mkdir wine64
+	cd wine64
+
+	LDFLAGS="-L/usr/lib64 -ldl" \
+	CFLAGS="$SLKCFLAGS" \
+	CXXFLAGS="$SLKCFLAGS" \
+	../configure \
+		--prefix=/usr \
+		--libdir=/usr/lib64 \
+		--localstatedir=/var \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--enable-win64 \
+		--with-x \
+		--with-gnutls \
+		--${do_opengl}-opengl \
+		--program-prefix= \
+		--program-suffix= \
+		--disable-tests \
+		--build=$BUILD_ARCH
+
+	make depend
+	make -j $(nproc) || make
+	make install DESTDIR=$PKG
+	cd ..
+fi
+
+
+if [ "$WIN32" = "yes" ]; then
+	mkdir wine32
+	cd wine32
+
+	export PKG_CONFIG_PATH="/usr/lib/pkgconfig:$PKG_CONFIG_PATH"
+
+	LDFLAGS="-L/usr/lib -ldl" \
+	CFLAGS="$SLKCFLAGS" \
+	CXXFLAGS="$SLKCFLAGS" \
+	../configure \
+		$wine64 \
+		--prefix=/usr \
+		--libdir=/usr/lib \
+		--localstatedir=/var \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--with-x \
+		--with-gnutls \
+		--${do_opengl}-opengl \
+		--program-prefix= \
+		--program-suffix= \
+		--disable-tests \
+		--build=$BUILD_ARCH
+
+	make depend
+	make
+	make install DESTDIR=$PKG
+	cd ..
+fi
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+	| cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+find $PKG/usr/share/man -type f -exec gzip -9 {} \;
+for i in $( find $PKG/usr/share/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+
+mkdir -p $PKG/usr/share/doc/$PRGNAM-$VERSION
+cp -a ANNOUNCE AUTHORS COPYING.LIB LICENSE* README VERSION $PKG/usr/share/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/share/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

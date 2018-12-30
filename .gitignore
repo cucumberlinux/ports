@@ -3,6 +3,7 @@
 *.tar.xz
 *.tar.bz2
 *.tar.lz
+*.zip
 
 # Binary package archives
 *.t?z

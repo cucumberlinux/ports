@@ -1,0 +1,5 @@
+# Additional build information 
+
+NAME=wine
+VERSION=
+URL=(https://dl.winehq.org/wine/source/3.0/wine-3.0.3.tar.xz)
