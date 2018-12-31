@@ -32,7 +32,7 @@ if [ -z "$(grep portuser: etc/group)" ]; then
         echo "portuser:x:53:portuser" >> etc/group
 fi
 if [ -z "$(grep portuser: etc/passwd)" ]; then
-        echo "portuser:x:53:53:Ports Tree Privilege Separation User:/srv/www:/bin/false" >> etc/passwd
+        echo "portuser:x:53:53:Ports Tree Privilege Separation User:/var/lib/portutils:/bin/false" >> etc/passwd
 fi
 if [ -z "$(grep portuser: etc/shadow)" ]; then
         echo "portuser:!:17149:0:::::" >> etc/shadow

@@ -5,12 +5,12 @@
 # You must make exactly 11 lines for the formatting to be correct.  It's also
 # customary to leave one space after the ':' except on otherwise blank lines.
 
-       |-----handy-ruler------------------------------------------------------|
-portutils: portutils (short description of app)
+         |-----handy-ruler------------------------------------------------------|
+portutils: portutils (utilities for the ports tree)
 portutils:
-portutils:
-portutils:
-portutils:
+portutils: The portutils package provides basic utilities for interacting with 
+portutils: the ports tree and installing packages from source, such as portmake,
+portutils: portsync and portstrap.
 portutils:
 portutils:
 portutils:

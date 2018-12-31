@@ -32,6 +32,9 @@ build () {
 	cd "$OWD/utilities" || exit 1
 	make install DESTDIR=$DESTDIR PREFIX=/usr || exit 1
 
+	# Create the portuser's home directory
+	install -d -m 755 -o 53 -g 53 $DESTDIR/var/lib/portutils || exit 1
+
 	# Move the configuration files so they are not clobbered on package
 	# updates.
 	for file in etc/portmake.conf etc/portsync.conf; do
