@@ -155,7 +155,6 @@ portmake_build_only () {
 		local OWD=$PWD
 		cd $OUTDIR
 		for pkg in $(ls -A $OUTDIR); do
-			echo $pkg
 			portmake_util_autoincrement_build_if_necessary $pkg || exit 4
 		done
 		cd $OWD
@@ -242,8 +241,6 @@ portmake_util_autoincrement_build_if_necessary () {
 	local escaped_name=$(sed 's/[^[:alnum:]]/\\&/g' <<< "$package_basename")
 	local installed_package_name=$(ls /var/log/packages | egrep '^'"$escaped_name"'-[^-]+-[^-]+-[^-]+$')
 
-	echo escaped package: $escaped_name
-	echo installed package: $installed_package_name
 	# If the package is not installed, then we are done; no need to
 	# autoincrement
 	if [ -z "$installed_package_name" ]; then
@@ -251,12 +248,9 @@ portmake_util_autoincrement_build_if_necessary () {
 	# Otherwise, do the check and autoincrement if need be.
 	elif portmake_util_are_package_names_similar "$package_name" "$installed_package_name"; then
 		local original_tag=$(echo $installed_package_name | rev | cut -d - -f 1 | rev)
-		echo original tag: $original_tag
 		local original_build_number=${original_tag:${#BUILD_PREFIX}}
 		local new_build_number=$(expr $original_build_number + 1)
-		echo "$original_build_number -> $new_build_number"
 		local new_package_name="$(echo $package_name | rev | cut -d - -f 2- | rev)-${BUILD_PREFIX}${new_build_number}.$(echo $1 | rev | cut -d . -f 1 | rev)"
-		echo new package name: $new_package_name
 		mv "$1" "$new_package_name" || return 1
 	fi
 }
