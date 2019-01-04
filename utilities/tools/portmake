@@ -51,6 +51,8 @@ BUILD_PREFIX=localport_
 # BUILD environment variable supersedes this.
 AUTOINCREMENT_BUILD_NUMBER=true
 
+MOVE_OLD_PACKAGES=true
+
 # Include the config file. Do it after setting the variables so that
 # customizations made in the config file take precendence.
 if [ -f /etc/portmake.conf ]; then
@@ -234,6 +236,11 @@ portmake_util_are_package_names_similar () {
 # necessary, set the build number for the current package to the build number
 # of the installed package plus 1.
 portmake_util_autoincrement_build_if_necessary () {
+	# Check if autoincrementation is enabled and stop if it's not
+	if [ $AUTOINCREMENT_BUILD_NUMBER = false ]; then
+		return
+	fi
+
 	# Strip the .t?z from the package file name
 	local package_name=$(echo $1 | rev | cut -d . -f 2- | rev)
 	local package_basename=$(echo $1 | rev | cut -d - -f 4- | rev)
