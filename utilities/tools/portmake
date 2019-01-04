@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2018 Scott Court
+# Copyright 2018, 2019 Scott Court
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +43,13 @@ PRIVSEP_USER=portuser
 # system. Note the the `update-all` option will update packages only if their
 # build prefix matches this.
 BUILD_PREFIX=localport_
+
+# Determines whether or not to automatically increment the build number when
+# rebuilding a package. If this is set to true, the build number will be set to
+# the current build number plus 1 if the full package name of the package being
+# built is otherwise the same as the version already installed. Setting the
+# BUILD environment variable supersedes this.
+AUTOINCREMENT_BUILD_NUMBER=true
 
 # Include the config file. Do it after setting the variables so that
 # customizations made in the config file take precendence.
@@ -143,6 +150,16 @@ portmake_build_only () {
 	echo -e ${COLOR_INFO}Building ${package}${COLOR_NORMAL}
 	eval OUTDIR=$OUTDIR BUILD=$PKG_BUILD $package_dir/${package}.buildscript build || exit 4
 
+	# Autoincrement the build numbers as necessary
+	if [ -z "$BUILD" ]; then
+		local OWD=$PWD
+		cd $OUTDIR
+		for pkg in $(ls -A $OUTDIR); do
+			portmake_util_autoincrement_build_if_necessary $pkg || exit 4
+		done
+		cd $OWD
+	fi
+
 	# Copy the package to the PACKAGE_DIR
 	if [ ! -z "$PACKAGE_DIR" -a ! -z "$(ls -A $OUTDIR)" ]; then
 		if [ ! -d $PACKAGE_DIR/$package_group ]; then
@@ -188,6 +205,53 @@ portmake_util_is_package_installed () {
 		return 1
 	else
 		return 0
+	fi
+}
+
+# Utility function to check if two package names ($1 and $2) are identical with
+# the exception of the build number, without exiting the script. This is used
+# to determine if the build number needs to be autoincremented. Returns
+# true (0) if the package names are "similar", otherwise returns false (1).
+portmake_util_are_package_names_similar () {
+	local basename_1=$(echo $1 | rev | cut -d - -f 2- | rev)
+	local basename_2=$(echo $2 | rev | cut -d - -f 2- | rev)
+	local buildtag_1=$(echo $1 | rev | cut -d - -f 1 | rev)
+	local buildtag_2=$(echo $2 | rev | cut -d - -f 1 | rev)
+	if [[ 	"$basename_1" = "$basename_2" && 
+		"$buildtag_1" = "$BUILD_PREFIX"* && 
+		"$buildtag_2" = "$BUILD_PREFIX"* ]];
+	then
+		return 0
+	else
+		return 1
+	fi
+}
+
+# Utility function to increment the build number for the package file specified
+# by $1 if it is necessary (i.e. if portmake_util_are_package_names_similar
+# NEW_PACKAGE_NAME INSTALLED_PACKAGE_NAME evaluates to true). The package file
+# specified must be in the current working directory. If autoincrementation is
+# necessary, set the build number for the current package to the build number
+# of the installed package plus 1.
+portmake_util_autoincrement_build_if_necessary () {
+	# Strip the .t?z from the package file name
+	local package_name=$(echo $1 | rev | cut -d . -f 2- | rev)
+	local package_basename=$(echo $1 | rev | cut -d - -f 4- | rev)
+	# Escape the package name for egrep
+	local escaped_name=$(sed 's/[^[:alnum:]]/\\&/g' <<< "$package_basename")
+	local installed_package_name=$(ls /var/log/packages | egrep '^'"$escaped_name"'-[^-]+-[^-]+-[^-]+$')
+
+	# If the package is not installed, then we are done; no need to
+	# autoincrement
+	if [ -z "$installed_package_name" ]; then
+		return
+	# Otherwise, do the check and autoincrement if need be.
+	elif portmake_util_are_package_names_similar "$package_name" "$installed_package_name"; then
+		local original_tag=$(echo $installed_package_name | rev | cut -d - -f 1 | rev)
+		local original_build_number=${original_tag:${#BUILD_PREFIX}}
+		local new_build_number=$(expr $original_build_number + 1)
+		local new_package_name="$(echo $package_name | rev | cut -d - -f 2- | rev)-${BUILD_PREFIX}${new_build_number}.$(echo $1 | rev | cut -d . -f 1 | rev)"
+		mv "$1" "$new_package_name" || return 1
 	fi
 }
 
