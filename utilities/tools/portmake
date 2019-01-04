@@ -51,6 +51,14 @@ BUILD_PREFIX=localport_
 # BUILD environment variable supersedes this.
 AUTOINCREMENT_BUILD_NUMBER=true
 
+# Determines whether or not "old packages" (packages that have been replaced by
+# a newer version) should be automatically moved to a seperate directory.
+MOVE_OLD_PACKAGES=true
+
+# If MOVE_OLD_PACKAGES is set to true, old packages will be moved to this
+# directory.
+OLD_PACKAGE_DIR=/opt/old_packages
+
 # Include the config file. Do it after setting the variables so that
 # customizations made in the config file take precendence.
 if [ -f /etc/portmake.conf ]; then
@@ -160,6 +168,11 @@ portmake_build_only () {
 		cd $OWD
 	fi
 
+	# Retire the old packages
+	if [ $MOVE_OLD_PACKAGES = true ]; then
+		portmake_util_retire_package $package || exit 4
+	fi
+
 	# Copy the package to the PACKAGE_DIR
 	if [ ! -z "$PACKAGE_DIR" -a ! -z "$(ls -A $OUTDIR)" ]; then
 		if [ ! -d $PACKAGE_DIR/$package_group ]; then
@@ -208,6 +221,19 @@ portmake_util_is_package_installed () {
 	fi
 }
 
+# Utility function to "retire" the package specified by $1. It will move all
+# builds of the package into the OLD_PACKAGE_DIR heirarchy.
+portmake_util_retire_package () {
+	# Escape the package name for egrep
+	local escaped_name=$(sed 's/[^[:alnum:]]/\\&/g' <<< "$1")
+	for file in $(find "$PACKAGE_DIR" -type f | egrep '/'"$escaped_name"'-[^-]+-[^-]+-[^-]+.t?z$'); do
+		relpath=$(realpath "--relative-to=$PACKAGE_DIR" $file)
+		reldir=$(dirname $relpath)
+		mkdir -p "$OLD_PACKAGE_DIR/$reldir" || return 1
+		mv "$file"* "$OLD_PACKAGE_DIR/$reldir/" || return 1
+	done
+}
+
 # Utility function to check if two package names ($1 and $2) are identical with
 # the exception of the build number, without exiting the script. This is used
 # to determine if the build number needs to be autoincremented. Returns
@@ -234,6 +260,11 @@ portmake_util_are_package_names_similar () {
 # necessary, set the build number for the current package to the build number
 # of the installed package plus 1.
 portmake_util_autoincrement_build_if_necessary () {
+	# Check if autoincrementation is enabled and stop if it's not
+	if [ $AUTOINCREMENT_BUILD_NUMBER = false ]; then
+		return
+	fi
+
 	# Strip the .t?z from the package file name
 	local package_name=$(echo $1 | rev | cut -d . -f 2- | rev)
 	local package_basename=$(echo $1 | rev | cut -d - -f 4- | rev)
