@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2017, 2018 Scott Court
+# Copyright 2017, 2018, 2019 Scott Court
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -52,6 +52,18 @@ build () {
 	# script.
 	( cd $OWD/autoconf ; ./autoconf.build ) || exit 1
 	PATH=/tmp/autoconf-tmp/usr/bin:$PATH
+
+	# Firefox keeps requiring more and more memory to build. This has
+	# become an issue on the i686 architecture, causing builds to fail
+	# there. If we are on i686, build with some additional flags to
+	# decrease the compile and link time memory requirements.
+	if [ "$CUCARCH" = "i686" ]; then
+		# Use some memory reducing LDFLAGS
+		export LDFLAGS=" -Wl,--as-needed -Wl,--reduce-memory-overheads -Wl,--no-keep-memory -Wl,--stats"
+		export MOZ_LINK_FLAGS="$LDFLAGS"
+		# Put Rust objects on a "diet"
+		export export RUSTFLAGS="-Cdebuginfo=0"
+	fi
 
 	# Do the actual build
 	cat > mozconfig << "EOF"
