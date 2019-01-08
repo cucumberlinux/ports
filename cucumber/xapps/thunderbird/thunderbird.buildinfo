@@ -50,6 +50,18 @@ build () {
 	( cd $OWD/autoconf ; ./autoconf.build ) || exit 1
 	PATH=/tmp/autoconf-tmp/usr/bin:$PATH
 
+	# Thunderbird keeps requiring more and more memory to build. This has
+	# become an issue on the i686 architecture, causing builds to fail
+	# there. If we are on i686, build with some additional flags to
+	# decrease the compile and link time memory requirements.
+	if [ "$CUCARCH" = "i686" ]; then
+		# Use some memory reducing LDFLAGS
+		export LDFLAGS=" -Wl,--as-needed -Wl,--reduce-memory-overheads -Wl,--no-keep-memory -Wl,--stats"
+		export MOZ_LINK_FLAGS="$LDFLAGS"
+		# Put Rust objects on a "diet"
+		export export RUSTFLAGS="-Cdebuginfo=0"
+	fi
+
 	# Apply any patches located in $OWD/patches
 	pkgapi_apply_patches || exit 1
 
