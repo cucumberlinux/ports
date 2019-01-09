@@ -1,4 +1,4 @@
-.\" Copyright 2018 Scott Court
+.\" Copyright 2018, 2019 Scott Court
 .\"
 .\" Permission is hereby granted, free of charge, to any person obtaining a copy
 .\" of this software and associated documentation files (the "Software"), todeal
@@ -17,7 +17,7 @@
 .\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 .\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 .\" IN THE SOFTWARE.
-.TH PORTMAKE 8 2018-11-02 "Cucumber Linux 2.0" "Linux System Administrator's Manual"
+.TH PORTMAKE 8 2019-01-09 "Cucumber Linux 2.0" "Linux System Administrator's Manual"
 .SH NAME
 portmake \- build and install packages from source
 
@@ -61,7 +61,7 @@ dependencies or install the built package.
 .TP
 \fBbuild-recursive\fR
 Build and install any build time dependencies. Then build the package,
-downloading and verifying the source if necessary.
+recursively downloading and verifying source code as necessary.
 .TP
 \fBcheck-installed\fR
 Checks if this package is already installed. Evaluates to true and exists with
@@ -134,8 +134,12 @@ portion of each package built.
 .fi
 
 .SH HISTORY
-Portmake first appeard in Cucumber Linux 2.0.
+Portmake first appeared in Cucumber Linux 2.0.
 
 .SH AUTHOR
 Portmake was written by Scott Court (scott@cucumberlinux.com).
+
+.SH SEE ALSO
+.BR portsync(8)
+.BR portstrap(8)
 
