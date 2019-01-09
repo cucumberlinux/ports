@@ -1,0 +1,4 @@
+Note: Cairo will NOT build if the lzo package is installed. You MUST remove the
+lzo package (removepkg lzo) before building cairo and then reinstall it
+afterwards. You can thank the cairo devs for not including a switch to disable
+this. :D
