@@ -119,14 +119,32 @@ nspr
 nss
 firefox
 thunderbird
+linux-source
+
+dosfstools
+lzo
+btrfs-progs
+poppler
+
+xf86-video-nouveau
+xf86-video-intel
+alsa-utils
+alsa-plugins
+alsa-firmware
+gstreamer
+lvm2
+parted
+dbus-glib
+libgudev
+libndp
+slang
+
+# TODO move this after qt5 has been installed and uncomment later
+# vlc
 
 # TODO uncomment this later
 # pinentry
 
 # TODO uncomment this later
 #vte
-
-# TODO poppler was moved to much later in the build process. Add its
-# dependencies before it. 
-#poppler
 
