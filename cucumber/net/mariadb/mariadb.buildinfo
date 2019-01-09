@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for mariadb
 
 NAME=mariadb
-VERSION=10.3.11
+VERSION=10.3.12
 URL=(https://downloads.mariadb.org/interstitial/$NAME-$VERSION/source/$NAME-$VERSION.tar.gz)
 BUILDDEPS=(cmake)
 
