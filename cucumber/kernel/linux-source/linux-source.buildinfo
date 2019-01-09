@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for linux-source
 
 # Source linux.buildinfo for version and download information
-source linux.buildinfo
+source $(dirname $0)/linux.buildinfo
 
 NAME=linux-source
 TARNAME=linux
