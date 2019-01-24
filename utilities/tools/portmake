@@ -310,8 +310,8 @@ portmake_util_check_update () {
 	fi
 
 	# Check if an update is available
-	local pkg_ports_dir=$(dirname $(find "$PORTS_TREE/" -name "$1.buildscript"))
-	local changed_files=$(find "$pkg_ports_dir" -newer "/var/log/packages/$pkg_file" | egrep -v '.buildscript$')
+	local pkg_ports_dir=$(dirname $(find -L "$PORTS_TREE/" -name "$1.buildscript"))
+	local changed_files=$(find -L "$pkg_ports_dir" -newer "/var/log/packages/$pkg_file" | egrep -v '.buildscript$')
 	if [ -z "$changed_files" ]; then
 		return 1
 	else
@@ -441,7 +441,7 @@ main () {
 	else
 		package=$2
 		for dir in ${ENABLED_REPOSITORIES[*]}; do
-			package_dir=$(find "$PORTS_TREE/$dir" -maxdepth 2 -name $2 -type d)
+			package_dir=$(find -L "$PORTS_TREE/$dir" -maxdepth 2 -name $2 -type d)
 			if [ ! -z "$package_dir" ]; then break; fi
 		done
 		if [ -z "$package_dir" ]; then
