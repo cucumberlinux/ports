@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for php
 
 NAME=php
-VERSION=7.3.0
+VERSION=7.3.1
 URL=(
 http://www.php.net/distributions/$NAME-$VERSION.tar.xz
 http://www.php.net/distributions/$NAME-$VERSION.tar.xz.asc
