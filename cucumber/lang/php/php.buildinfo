@@ -25,8 +25,8 @@
 NAME=php
 VERSION=7.3.2
 URL=(
-http://www.php.net/distributions/$NAME-$VERSION.tar.xz
-http://www.php.net/distributions/$NAME-$VERSION.tar.xz.asc
+https://www.php.net/distributions/$NAME-$VERSION.tar.xz
+https://www.php.net/distributions/$NAME-$VERSION.tar.xz.asc
 https://mirror.cucumberlinux.com/package_sources/php/7.3/php_manual_en.tar.gz)
 BUILDDEPS=(libxml2)
 
