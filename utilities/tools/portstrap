@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2018 Scott Court
+# Copyright 2018, 2019 Scott Court
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@ PORTSBRANCH='master'
 # The user who can write to the ports tree. Defaults to the "portuser" user if
 # he exists, then to the first unprivileged user and finally to  root if there
 # is no unprivileged user.
-id portuser && PORTSUSER=portuser
+id portuser > /dev/null && PORTSUSER=portuser
 PORTSUSER=${PORTSUSER:-$(id -nu 1000)}
 PORTSUSER=${PORTSUSER:-root}
 
