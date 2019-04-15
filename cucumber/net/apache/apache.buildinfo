@@ -24,7 +24,7 @@
 
 NAME=apache
 TARNAME=httpd
-VERSION=2.4.38
+VERSION=2.4.39
 URL=(https://archive.apache.org/dist/$TARNAME/$TARNAME-$VERSION.tar.gz https://archive.apache.org/dist/$TARNAME/$TARNAME-$VERSION.tar.gz.asc)
 BUILDDEPS=(apr-util pcre)
 
