@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for wget
 
 NAME=wget
-VERSION=1.19.5
+VERSION=1.20.3
 URL=(https://ftp.gnu.org/gnu/$NAME/$NAME-$VERSION.tar.gz)
 BUILDDEPS=()
 
