@@ -41,6 +41,7 @@ build () {
 		--libdir=/usr/lib${LIBDIRSUFFIX} \
 		--sysconfdir=/etc \
 		--localstatedir=/var \
+		--enable-shared \
 		--disable-static \
 		--build=$CUCARCH-cucumber-linux || exit 1
 	pkgapi_make || exit 1
