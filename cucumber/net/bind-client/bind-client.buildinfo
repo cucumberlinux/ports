@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2016, 2018 Scott Court
+# Copyright 2016, 2018, 2019 Scott Court
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,14 @@
 
 NAME=bind-client
 TARNAME=bind
-TARVERSION=9.11.5
+TARVERSION=9.11.6-P1
 VERSION=$(echo $TARVERSION | sed -e s/-/_/g)
-URL=(https://ftp.isc.org/isc/bind9/$TARVERSION/$TARNAME-$TARVERSION.tar.gz)
+URL=(https://ftp.isc.org/isc/bind9/$TARVERSION/$TARNAME-$TARVERSION.tar.gz https://ftp.isc.org/isc/bind9/$TARVERSION/$TARNAME-$TARVERSION.tar.gz.asc)
 BUILDDEPS=()
+
+verify () {
+	pkgapi_gpg --verify $TARNAME-$TARVERSION.tar.gz.asc || return 1
+}
 
 build () {
 
