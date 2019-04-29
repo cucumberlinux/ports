@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for openssh
 
 NAME=openssh
-VERSION=7.8p1
+VERSION=8.0p1
 URL=(https://ftp4.usa.openbsd.org/pub/OpenBSD/OpenSSH/portable/$NAME-$VERSION.tar.gz https://ftp4.usa.openbsd.org/pub/OpenBSD/OpenSSH/portable/$NAME-$VERSION.tar.gz.asc)
 BUILDDEPS=()
 
