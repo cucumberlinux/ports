@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for linux
 
 NAME=linux
-VERSION=4.14.113
+VERSION=4.14.115
 URL=(	https://cdn.kernel.org/pub/$NAME/kernel/v4.x/$NAME-$VERSION.tar.xz
 	https://cdn.kernel.org/pub/$NAME/kernel/v4.x/$NAME-$VERSION.tar.sign)
 BUILDDEPS=()
