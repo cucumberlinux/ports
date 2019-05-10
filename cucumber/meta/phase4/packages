@@ -139,8 +139,33 @@ libgudev
 libndp
 slang
 
+# xfce
+libxfce4util
+xfconf
+startup-notification
+libxfce4ui
+exo
+garcon
+gtk-xfce-engine
+libwnck
+xfce4-panel
+iso-codes
+libxklavier
+thunar
+lxde-icon-theme
+hicolor-icon-theme
+thunar-volman
+xfce4-appfinder
+xfce4-settings
+xfdesktop
+xfwm4
+xfce4-session
+
 # TODO move this after qt5 has been installed and uncomment later
 # vlc
+
+#	move this back to its original spot in the build process
+# adwaita-icon-theme
 
 # TODO uncomment this later
 # pinentry
