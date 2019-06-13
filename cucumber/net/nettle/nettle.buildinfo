@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for nettle
 
 NAME=nettle
-VERSION=3.4
+VERSION=3.4.1
 URL=(https://ftp.gnu.org/gnu/$NAME/$NAME-$VERSION.tar.gz)
 BUILDDEPS=()
 
