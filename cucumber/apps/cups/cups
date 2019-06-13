@@ -1,0 +1,69 @@
+#!/bin/sh
+########################################################################
+# Begin cups
+#
+# Description :
+#
+# Authors     : Scott Court (Z5T1@Z5T1.com)
+#
+# Version     : Cucumber 1.0
+#
+########################################################################
+
+### BEGIN SYMLINK INFO
+# This section controls the name of the symlinks that are created in
+# /etc/rc.d/rc?.d by chkconfig and the system init setup script.
+# START_LINK_NAME	S81cups
+# KILL_LINK_NAME	K36cups
+### END SYMLINK INFO
+
+### BEGIN INIT INFO
+# Provides:            cups
+# Default-Start:       3 4 5
+# Default-Stop:        0 1 2 6
+# Short-Description:   Starts cups print daemon.
+# Description:         Starts cups print daemon.
+### END INIT INFO
+
+. /lib/lsb/init-functions
+
+case "${1}" in
+   start)
+      log_info_msg "Starting CUPS Printserver..."
+      start_daemon /usr/sbin/cupsd
+      evaluate_retval
+      ;;
+
+   stop)
+      log_info_msg "Stopping CUPS Printserver..."
+      killproc /usr/sbin/cupsd
+      evaluate_retval
+      ;;
+
+   reload)
+      log_info_msg "Reloading CUPS Printserver..."
+      killproc /usr/sbin/cupsd -HUP
+      evaluate_retval
+      ;;
+
+   restart)
+      ${0} stop
+      sleep 1
+      ${0} start
+      ;;
+
+   status)
+      statusproc /usr/sbin/cupsd
+      ;;
+
+   *)
+      echo "Usage: $0 {start|stop|reload|restart|status}"
+      exit 1
+      ;;
+
+esac
+
+exit 0
+
+# End cups
+

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2017, 2018 Scott Court
+# Copyright 2017, 2019 Scott Court
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,16 +20,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# Cucumber Linux Buildinfo for nettle
+# Cucumber Linux Buildinfo for epdfview
 
-NAME=nettle
-VERSION=3.4.1
-URL=(https://ftp.gnu.org/gnu/$NAME/$NAME-$VERSION.tar.gz)
-BUILDDEPS=()
+NAME=epdfview
+VERSION=0.1.8
+URL=(http://anduin.linuxfromscratch.org/BLFS/$NAME/$NAME-$VERSION.tar.bz2)
+BUILDDEPS=(gtk+ poppler cups)
 
 build () {
 
-	tar -xf "$OWD/$NAME-$VERSION.tar.gz" || exit 1
+	tar -xf "$OWD/$NAME-$VERSION.tar.bz2" || exit 1
 	cd $NAME-$VERSION || exit 1
 
 	# Apply any patches located in $OWD/patches
@@ -46,14 +46,16 @@ build () {
 	pkgapi_make || exit 1
 	make install DESTDIR=$DESTDIR || exit 1
 
+	# Add desktop icons
+	for size in 24 32 48; do
+		mkdir -pv $DESTDIR/usr/share/icons/hicolor/${size}x${size}/apps
+		ln -svf ../../../../epdfview/pixmaps/icon_epdfview-$size.png \
+			$DESTDIR/usr/share/icons/hicolor/${size}x${size}/apps
+	done 
+
 	# Strip all of the binaries and libraries in $DESTDIR/ of their
 	# debugging symbols.
 	pkgapi_strip
-
-	# Install the Documentation
-	chmod -v 755 $DESTDIR/usr/lib/lib{hogweed,nettle}.so
-	install -v -m755 -d $DSETDIR/usr/share/doc/nettle-$VERSION
-	install -v -m644 nettle.html $DESTDIR/usr/share/doc/nettle-$VERSION/
 
 	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
 	# $DESTDIR/install, creating $DESTDIR/install if need be.

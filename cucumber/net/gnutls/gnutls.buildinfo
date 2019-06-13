@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2017, 2018 Scott Court
+# Copyright 2017, 2019 Scott Court
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,16 +20,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# Cucumber Linux Buildinfo for nettle
+# Cucumber Linux Buildinfo for gnutls
 
-NAME=nettle
-VERSION=3.4.1
-URL=(https://ftp.gnu.org/gnu/$NAME/$NAME-$VERSION.tar.gz)
-BUILDDEPS=()
+NAME=gnutls
+VERSION=3.6.6
+MINOR_VERSION=$(echo $VERSION | rev | cut -d . -f 2- | rev)
+URL=(https://www.gnupg.org/ftp/gcrypt/$NAME/v$MINOR_VERSION/$NAME-$VERSION.tar.xz)
+BUILDDEPS=(nettle)
 
 build () {
 
-	tar -xf "$OWD/$NAME-$VERSION.tar.gz" || exit 1
+	tar -xf "$OWD/$NAME-$VERSION.tar.xz" || exit 1
 	cd $NAME-$VERSION || exit 1
 
 	# Apply any patches located in $OWD/patches
@@ -41,19 +42,22 @@ build () {
 		--libdir=/usr/lib${LIBDIRSUFFIX} \
 		--sysconfdir=/etc \
 		--localstatedir=/var \
+		--with-default-trust-store-file=/etc/ssl/ca-bundle.crt \
+		--enable-openssl-compatibility \
+		--without-p11-kit \
+		--with-included-libtasn1 \
+		--with-included-unistring \
 		--disable-static \
 		--build=$CUCARCH-cucumber-linux || exit 1
 	pkgapi_make || exit 1
 	make install DESTDIR=$DESTDIR || exit 1
 
+	# Install the Documentation
+	make -C doc/reference DESTDIR=$DESTDIR install-data-local
+
 	# Strip all of the binaries and libraries in $DESTDIR/ of their
 	# debugging symbols.
 	pkgapi_strip
-
-	# Install the Documentation
-	chmod -v 755 $DESTDIR/usr/lib/lib{hogweed,nettle}.so
-	install -v -m755 -d $DSETDIR/usr/share/doc/nettle-$VERSION
-	install -v -m644 nettle.html $DESTDIR/usr/share/doc/nettle-$VERSION/
 
 	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
 	# $DESTDIR/install, creating $DESTDIR/install if need be.
