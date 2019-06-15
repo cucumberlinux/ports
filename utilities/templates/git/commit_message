@@ -1,0 +1,19 @@
+package: brief description
+
+Leave a blank line and then put the full details here. No line should
+exceed 72 characters in length. The brief description should be
+something like "upgraded packageX to versionY" or 
+"fixed CVE-2019-12345".
+
+When referencing external links, use the following format:
+
+For more information see:
+	https://example.com/reference1
+	https://example.net/reference2
+
+If this commit is a security fix, make sure to include the relevant
+CVE ids in the commit message. Also make this the last line of the
+message:
+
+* SECURITY FIX *
+
