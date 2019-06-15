@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2017, 2018 Scott Court
+# Copyright 2017, 2018, 2019 Scott Court
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,10 @@
 # Cucumber Linux Buildinfo for vte
 
 NAME=vte
-VERSION=0.28.2
+VERSION=0.52.2
 MINOR_VERSION=$(echo $VERSION | cut -d . -f 1-2)
 URL=(https://ftp.gnome.org/pub/gnome/sources/$NAME/$MINOR_VERSION/$NAME-$VERSION.tar.xz)
-BUILDDEPS=(gtk+)
+BUILDDEPS=(gtk+3 libxml2 pcre2 gnutls)
 
 build () {
 
@@ -44,6 +44,8 @@ build () {
 		--sysconfdir=/etc \
 		--localstatedir=/var \
 		--disable-static \
+		--disable-introspection \
+		--disable-vala \
 		--enable-python \
 		--build=$CUCARCH-cucumber-linux || exit 1
 	pkgapi_make || exit 1
