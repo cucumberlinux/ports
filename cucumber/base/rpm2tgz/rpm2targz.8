@@ -1,0 +1,79 @@
+.\" Copyright 2019 Scott Court
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining a copy
+.\" of this software and associated documentation files (the "Software"), todeal
+.\" in the Software without restriction, including without limitation the
+.\" rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+.\" sell copies of the Software, and to permit persons to whom the Software is
+.\" furnished to do so, subject to the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included in
+.\" all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.\" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+.\" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+.\" AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+.\" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+.\" FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+.\" IN THE SOFTWARE.
+.TH RPM2TGZ 8 2019-06-21 "Cucumber Linux 2.0" "Linux System Administrator's Manual"
+.SH NAME
+rpm2targz/rpm2tgz/rpm2txz \- a tool for converting an RPM archive into a tar+gz
+one
+
+.SH SYNOPSIS
+.B rpm2targz
+<file.rpm>
+.PP
+.B rpm2tgz
+[OPTION] <file.rpm>
+.PP
+.B rpm2txz
+[OPTION] <file.rpm>
+
+.SH DESCRIPTION
+Converts RPM format to standard GNU tar + GNU zip format. (view converted
+packages with "less", install and remove with "installpkg", "removepkg",
+"pkgtool", or manually with "tar").
+.PP
+It's advisable to at least examine the converted package with 'less' to make
+sure it won't do anything too crazy to your system.  If it does, Patrick
+Volkerding and David Cantrell are not responsible, so use this at your own
+risk.
+
+.PP
+Options:
+.TP
+\fB-s\fR
+extract the install scripts to /usr/doc/$PRGNAM-$VERSION/ for review.
+.TP
+\fB-S\fR
+extracts the install scripts to be executed on package installation (only
+pre-install and post-install scripts used) USE WITH CAUTION! 
+.TP
+\fB-n\fR
+name the output package using the rpm's metadata.
+.TP
+\fB-r\fR
+extract what the rpm's "requires" (dependencies) as documention to
+/usr/doc/$PRGNAM-$VERSION/
+.TP
+\fB-d\fR
+attempt a wellformed slack-desc from the rpm meta data.
+.TP
+\fB-c\fR
+reset all directory permissions to 755 and ownership to root:root.
+
+.SH HISTORY
+Rpm2tgz first appeared in Slackware Linux in 1997. It was originally ported to
+Cucumber Linux in version 1.0.
+
+.SH AUTHOR
+Rpm2tgz was written by Patrick Volkerding.
+
+.SH SEE ALSO
+.BR installpkg(8)
+.BR removepkg(8)
+.BR pkgtool(8)
+
