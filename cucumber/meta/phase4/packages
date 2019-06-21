@@ -167,16 +167,17 @@ epdfview
 libcroco
 librsvg
 lxdm
+pcre2
+vte
+xfce4-terminal
+libexif
+ristretto
+tumbler
+adwaita-icon-theme
 
 # TODO move this after qt5 has been installed and uncomment later
 # vlc
 
-#	move this back to its original spot in the build process
-# adwaita-icon-theme
-
 # TODO uncomment this later
 # pinentry
-
-# TODO uncomment this later
-#vte
 
