@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2017, 2018, 2019 Scott Court
+# Copyright 2016, 2018, 2019 Scott Court
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,23 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# Cucumber Linux Buildinfo for vte
+# Cucumber Linux Buildinfo for pcre
 
-NAME=vte
-VERSION=0.52.2
-MINOR_VERSION=$(echo $VERSION | cut -d . -f 1-2)
-URL=(https://ftp.gnome.org/pub/gnome/sources/$NAME/$MINOR_VERSION/$NAME-$VERSION.tar.xz)
-BUILDDEPS=(gtk+3 libxml2 pcre2 gnutls)
+NAME=pcre2
+VERSION=10.31
+URL=(
+	https://downloads.sourceforge.net/pcre/pcre2-10.31.tar.bz2
+	https://downloads.sourceforge.net/pcre/pcre2-10.31.tar.bz2.sig
+)
+BUILDDEPS=()
+
+verify () {
+	pkgapi_gpg --verify $NAME-$VERSION.tar.bz2.sig || return 1
+}
 
 build () {
 
-	tar -xf "$OWD/$NAME-$VERSION.tar.xz" || exit 1
+	tar -xf "$OWD/$NAME-$VERSION.tar.bz2" || exit 1
 	cd $NAME-$VERSION || exit 1
 
 	# Apply any patches located in $OWD/patches
@@ -40,16 +46,25 @@ build () {
 	./configure \
 		--prefix=/usr \
 		--libdir=/usr/lib${LIBDIRSUFFIX} \
-		--libexecdir=/usr/lib${LIBDIRSUFFIX}/vte \
 		--sysconfdir=/etc \
 		--localstatedir=/var \
+		--docdir=/usr/share/doc/pcre2-${VERSION} \
+		--enable-unicode \
+		--enable-jit \
+		--enable-pcre2-16 \
+		--enable-pcre2-32 \
+		--enable-pcre2grep-libz \
+		--enable-pcre2grep-libbz2 \
+		--enable-pcre2test-libreadline \
 		--disable-static \
-		--disable-introspection \
-		--disable-vala \
-		--enable-python \
 		--build=$CUCARCH-cucumber-linux || exit 1
 	pkgapi_make || exit 1
 	make install DESTDIR=$DESTDIR || exit 1
+
+	# Move the libraries to /lib{$LIBDIRSUFFIX}
+	mkdir -pv $DESTDIR/lib${LIBDIRSUFFIX}
+	mv -v $DESTDIR/usr/lib${LIBDIRSUFFIX}/libpcre.so.* $DESTDIR/lib${LIBDIRSUFFIX}/
+	ln -sfv ../../lib${LIBDIRSUFFIX}/$(readlink $DESTDIR/usr/lib${LIBDIRSUFFIX}/libpcre.so) $DESTDIR/usr/lib${LIBDIRSUFFIX}/libpcre.so
 
 	# Strip all of the binaries and libraries in $DESTDIR/ of their
 	# debugging symbols.

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2017, 2018, 2019 Scott Court
+# Copyright 2017, 2019 Scott Court
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# Cucumber Linux Buildinfo for vte
+# Cucumber Linux Buildinfo for xfce4-terminal
 
-NAME=vte
-VERSION=0.52.2
+NAME=xfce4-terminal
+VERSION=0.8.7.4
 MINOR_VERSION=$(echo $VERSION | cut -d . -f 1-2)
-URL=(https://ftp.gnome.org/pub/gnome/sources/$NAME/$MINOR_VERSION/$NAME-$VERSION.tar.xz)
-BUILDDEPS=(gtk+3 libxml2 pcre2 gnutls)
+URL=(https://archive.xfce.org/src/apps/xfce4-terminal/$MINOR_VERSION/xfce4-terminal-$VERSION.tar.bz2)
+BUILDDEPS=(libxfce4ui vte)
 
 build () {
 
-	tar -xf "$OWD/$NAME-$VERSION.tar.xz" || exit 1
+	tar -xf "$OWD/$NAME-$VERSION.tar.bz2" || exit 1
 	cd $NAME-$VERSION || exit 1
 
 	# Apply any patches located in $OWD/patches
@@ -40,13 +40,9 @@ build () {
 	./configure \
 		--prefix=/usr \
 		--libdir=/usr/lib${LIBDIRSUFFIX} \
-		--libexecdir=/usr/lib${LIBDIRSUFFIX}/vte \
 		--sysconfdir=/etc \
 		--localstatedir=/var \
 		--disable-static \
-		--disable-introspection \
-		--disable-vala \
-		--enable-python \
 		--build=$CUCARCH-cucumber-linux || exit 1
 	pkgapi_make || exit 1
 	make install DESTDIR=$DESTDIR || exit 1
