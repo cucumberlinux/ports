@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for gnutls
 
 NAME=gnutls
-VERSION=3.6.6
+VERSION=3.6.8
 MINOR_VERSION=$(echo $VERSION | rev | cut -d . -f 2- | rev)
 URL=(https://www.gnupg.org/ftp/gcrypt/$NAME/v$MINOR_VERSION/$NAME-$VERSION.tar.xz)
 BUILDDEPS=(nettle)

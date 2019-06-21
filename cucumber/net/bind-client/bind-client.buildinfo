@@ -24,7 +24,7 @@
 
 NAME=bind-client
 TARNAME=bind
-TARVERSION=9.11.7
+TARVERSION=9.11.8
 VERSION=$(echo $TARVERSION | sed -e s/-/_/g)
 URL=(https://ftp.isc.org/isc/bind9/$TARVERSION/$TARNAME-$TARVERSION.tar.gz https://ftp.isc.org/isc/bind9/$TARVERSION/$TARNAME-$TARVERSION.tar.gz.asc)
 BUILDDEPS=()
@@ -40,6 +40,9 @@ build () {
 
 	# Apply any patches located in $OWD/patches
 	pkgapi_apply_patches || exit 1
+
+	# Install a required Python module
+	pip3 install ply || exit 1
 
 	# Do the actual build
 	./configure \
