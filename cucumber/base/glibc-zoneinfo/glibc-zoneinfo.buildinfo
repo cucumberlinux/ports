@@ -53,6 +53,11 @@ build () {
 	# debugging symbols.
 	pkgapi_strip
 
+	# Install the setup script
+	install -d -m 755 $DESTDIR/var/log/setup
+	install -m 755 -o root -g root $OWD/setup.timezone \
+		$DESTDIR/var/log/setup/
+
 	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
 	# $DESTDIR/install, creating $DESTDIR/install if need be.
 	pkgapi_copy_package_scripts
