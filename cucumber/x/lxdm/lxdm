@@ -2,7 +2,7 @@
 ########################################################################
 # Begin lxdm
 #
-# Description :
+# Description : Starts the LXDM display manager
 #
 # Authors     : Scott Court (Z5T1@Z5T1.com)
 #
