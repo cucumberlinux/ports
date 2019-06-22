@@ -1,0 +1,111 @@
+#!/bin/bash
+
+# Copyright 2017, 2018 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for libreoffice
+
+NAME=libreoffice
+VERSION=6.2.4.2
+MINOR_VERSION=$(echo $VERSION | cut -d . -f 1-3)
+URL=(
+https://download.documentfoundation.org/$NAME/src/$MINOR_VERSION/$NAME-$VERSION.tar.xz
+https://download.documentfoundation.org/$NAME/src/$MINOR_VERSION/$NAME-dictionaries-$VERSION.tar.xz
+https://download.documentfoundation.org/$NAME/src/$MINOR_VERSION/$NAME-help-$VERSION.tar.xz
+)
+BUILDDEPS=(zip unzip wget which cups python3 apr cairo curl expat libjpeg-turbo libpng nss libressl zlib gtk+ gtk+3)
+
+build () {
+
+	tar -xvf "$OWD/$NAME-$VERSION.tar.xz" --no-overwrite-dir || exit 1
+	cd $NAME-$VERSION || exit 1
+	install -dm755 external/tarballs || exit 1
+	ln -sv $OWD/libreoffice-dictionaries-${VERSION}.tar.xz \
+		external/tarballs/ || exit 1
+	ln -sv $OWD/libreoffice-help-${VERSION}.tar.xz \
+		external/tarballs/ || exit 1
+
+	# Apply any patches located in $OWD/patches
+	pkgapi_apply_patches || exit 1
+
+	# Do the actual build
+	sed -e "/gzip -f/d"   \
+	    -e "s|.1.gz|.1|g" \
+	    -i bin/distro-install-desktop-integration
+	sed -e "/distro-install-file-lists/d" -i Makefile.in
+	sed -i "s#isnan#std::&#g" xmloff/source/draw/ximp3dscene.cxx
+	chmod -v +x bin/unpack-sources
+	./autogen.sh --prefix=/usr               \
+	             --sysconfdir=/etc           \
+	             --build=$CUCARCH-cucumber-linux \
+	             --libdir=/usr/lib${LIBDIRSUFFIX} \
+	             --with-vendor='Cucumber Linux' \
+	             --with-lang='en-US'         \
+	             --with-help                 \
+	             --with-myspell-dicts        \
+	             --without-java              \
+	             --without-system-dicts      \
+	             --enable-cups               \
+	             --disable-dconf             \
+	             --disable-odk               \
+	             --disable-gstreamer-1-0     \
+	             --enable-release-build=yes  \
+	             --enable-python=system      \
+	             --without-krb5              \
+	             --without-gssapi            \
+	             --with-system-apr           \
+	             --with-system-cairo         \
+	             --with-system-curl          \
+	             --with-system-expat         \
+	             --with-system-jpeg          \
+	             --with-system-libpng        \
+	             --without-system-libxml        \
+	             --with-system-nss           \
+	             --with-system-openssl       \
+	             --with-system-zlib || exit 1
+	make build-nocheck -i || exit 1
+	make distro-pack-install DESTDIR=$DESTDIR || exit 1
+	install -v -m755 -d $DESTDIR/usr/share/appdata || exit 1
+	install -v -m644 sysui/desktop/appstream-appdata/*.xml \
+		$DESTDIR/usr/share/appdata || exit 1
+
+	# Libreoffice likes to place some crap in the root directory. Let's
+	# clean that up.
+	rm -v $DESTDIR/gid_Module_*
+
+	# Strip all of the binaries and libraries in $DESTDIR/ of their
+	# debugging symbols.
+	pkgapi_strip
+
+	# Make the .desktop files executable. If they aren't executable, they
+	# won't be runnable as desktop shortcuts. Usually, a copy of the
+	# .desktop file is made, which an unprivileged user can chmod +x, but
+	# with Libreoffice we symlink the .desktop files and it is a symlink
+	# that is copied to the desktop. This means an unprivleged user cannot
+	# cmhod +x them, and will therefore get a warning every time he goes to
+	# run it.
+	chmod +x $DESTDIR/usr/lib${LIBDIRSUFFIX}/libreoffice/share/xdg/*.desktop || exit 1
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+}
+
