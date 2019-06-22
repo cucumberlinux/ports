@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2016, 2018, 2019 Scott Court
+# Copyright 2017, 2019 Scott Court
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,44 +20,48 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# Cucumber Linux Buildinfo for pcre
+# Cucumber Linux Buildinfo for js
 
-NAME=pcre2
-VERSION=10.31
+NAME=js
+TARNAME=mozjs
+VERSION=60.1.0
 URL=(
-	https://downloads.sourceforge.net/pcre/$NAME-$VERSION.tar.bz2
-	https://downloads.sourceforge.net/pcre/$NAME-$VERSION.tar.bz2.sig
+https://ftp.gnome.org/pub/gnome/teams/releng/tarballs-needing-help/$TARNAME/$TARNAME-$VERSION.tar.bz2
+https://ftp.gnu.org/gnu/autoconf/autoconf-2.13.tar.gz
 )
-BUILDDEPS=()
-
-verify () {
-	pkgapi_gpg --verify $NAME-$VERSION.tar.bz2.sig || return 1
-}
+BUILDDEPS=(nspr python2 xorg-libraries zip)
 
 build () {
 
-	tar -xf "$OWD/$NAME-$VERSION.tar.bz2" || exit 1
-	cd $NAME-$VERSION || exit 1
+	tar -xf "$OWD/$TARNAME-$VERSION.tar.bz2" || exit 1
+	cd mozjs*/js/src || exit 1
+
+	# Fix an issue caused by perl-5.22.0 and later.
+	sed -i 's/(defined\((@TEMPLATE_FILE)\))/\1/' config/milestone.pl
 
 	# Apply any patches located in $OWD/patches
 	pkgapi_apply_patches || exit 1
 
+	# For some reason js now requires the inexplicably ancient autoconf
+	# 2.13 to build. Apparantly Mozilla is too lazy to make a portable
+	# build system. Thanks guys! We'll build a temporary version of
+	# autoconf 2.13 to make js happy.
+	#
+	# Thanks to Patrick Volkerding of Slackware Linux for this workaround
+	# script.
+	( cd $OWD/autoconf ; ./autoconf.build ) || exit 1
+	PATH=/tmp/autoconf-tmp/usr/bin:$PATH
+
 	# Do the actual build
-	./configure \
+	mkdir mozjs-build || exit 1
+	cd mozjs-build
+	../configure \
 		--prefix=/usr \
 		--libdir=/usr/lib${LIBDIRSUFFIX} \
-		--sysconfdir=/etc \
-		--localstatedir=/var \
-		--docdir=/usr/share/doc/pcre2-${VERSION} \
-		--enable-unicode \
-		--enable-jit \
-		--enable-pcre2-16 \
-		--enable-pcre2-32 \
-		--enable-pcre2grep-libz \
-		--enable-pcre2grep-libbz2 \
-		--enable-pcre2test-libreadline \
-		--disable-static \
-		--build=$CUCARCH-cucumber-linux || exit 1
+		--disable-jemalloc \
+		--enable-readline \
+		--with-system-nspr \
+		--with-system-zlib || exit 1
 	pkgapi_make || exit 1
 	make install DESTDIR=$DESTDIR || exit 1
 

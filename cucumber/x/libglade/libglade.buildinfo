@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2016, 2018, 2019 Scott Court
+# Copyright 2017, 2019 Scott Court
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,19 +20,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# Cucumber Linux Buildinfo for pcre
+# Cucumber Linux Buildinfo for libglade
 
-NAME=pcre2
-VERSION=10.31
-URL=(
-	https://downloads.sourceforge.net/pcre/$NAME-$VERSION.tar.bz2
-	https://downloads.sourceforge.net/pcre/$NAME-$VERSION.tar.bz2.sig
-)
-BUILDDEPS=()
-
-verify () {
-	pkgapi_gpg --verify $NAME-$VERSION.tar.bz2.sig || return 1
-}
+NAME=libglade
+VERSION=2.6.4
+MINOR_VERSION=$(echo $VERSION | cut -d . -f 1-2)
+URL=(http://ftp.gnome.org/pub/gnome/sources/$NAME/$MINOR_VERSION/$NAME-$VERSION.tar.bz2)
+BUILDDEPS=(libxml2 gtk+)
 
 build () {
 
@@ -43,19 +37,12 @@ build () {
 	pkgapi_apply_patches || exit 1
 
 	# Do the actual build
+	sed -i '/DG_DISABLE_DEPRECATED/d' glade/Makefile.in
 	./configure \
 		--prefix=/usr \
 		--libdir=/usr/lib${LIBDIRSUFFIX} \
 		--sysconfdir=/etc \
 		--localstatedir=/var \
-		--docdir=/usr/share/doc/pcre2-${VERSION} \
-		--enable-unicode \
-		--enable-jit \
-		--enable-pcre2-16 \
-		--enable-pcre2-32 \
-		--enable-pcre2grep-libz \
-		--enable-pcre2grep-libbz2 \
-		--enable-pcre2test-libreadline \
 		--disable-static \
 		--build=$CUCARCH-cucumber-linux || exit 1
 	pkgapi_make || exit 1

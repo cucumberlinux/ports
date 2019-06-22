@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 
-# Copyright 2016, 2018, 2019 Scott Court
+# Copyright 2017, 2019 Scott Court
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,46 +20,35 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# Cucumber Linux Buildinfo for pcre
+# Cucumber Linux Buildinfo for rpm2tgz
 
-NAME=pcre2
-VERSION=10.31
-URL=(
-	https://downloads.sourceforge.net/pcre/$NAME-$VERSION.tar.bz2
-	https://downloads.sourceforge.net/pcre/$NAME-$VERSION.tar.bz2.sig
-)
+NAME=rpm2tgz
+VERSION=1.2.2
+URL=()
 BUILDDEPS=()
 
-verify () {
-	pkgapi_gpg --verify $NAME-$VERSION.tar.bz2.sig || return 1
-}
-
 build () {
-
-	tar -xf "$OWD/$NAME-$VERSION.tar.bz2" || exit 1
-	cd $NAME-$VERSION || exit 1
 
 	# Apply any patches located in $OWD/patches
 	pkgapi_apply_patches || exit 1
 
-	# Do the actual build
-	./configure \
-		--prefix=/usr \
-		--libdir=/usr/lib${LIBDIRSUFFIX} \
-		--sysconfdir=/etc \
-		--localstatedir=/var \
-		--docdir=/usr/share/doc/pcre2-${VERSION} \
-		--enable-unicode \
-		--enable-jit \
-		--enable-pcre2-16 \
-		--enable-pcre2-32 \
-		--enable-pcre2grep-libz \
-		--enable-pcre2grep-libbz2 \
-		--enable-pcre2test-libreadline \
-		--disable-static \
-		--build=$CUCARCH-cucumber-linux || exit 1
-	pkgapi_make || exit 1
-	make install DESTDIR=$DESTDIR || exit 1
+	# Do the build
+	install -d $DESTDIR/usr/bin || exit 1
+	install -m 755 $OWD/rpm2targz $DESTDIR/usr/bin || exit 1
+	cc -o $DESTDIR/usr/bin/rpmoffset $OWD/rpmoffset.c || exit 1
+	chmod 755 $DESTDIR/usr/bin/rpmoffset || exit 1
+	( cd $DESTDIR/usr/bin ; ln -sf rpm2targz rpm2tgz )
+	( cd $DESTDIR/usr/bin ; ln -sf rpm2targz rpm2txz )
+
+	# Install the documentation
+	install -d $DESTDIR/usr/share/doc/rpm2targz || exit 1
+	install -o root -g root -m 644 $OWD/rpm2targz.README \
+		$DESTDIR/usr/share/doc/rpm2targz/rpm2targz.README || exit 1
+	install -d $DESTDIR/usr/share/man/man8 || exit 1
+	install -o root -g root -m 644 $OWD/rpm2targz.8 \
+		$DESTDIR/usr/share/man/man8 || exit 1
+	( cd $DESTDIR/usr/share/man/man8 ; ln -sf rpm2targz.8 rpm2tgz.8 )
+	( cd $DESTDIR/usr/share/man/man8 ; ln -sf rpm2targz.8 rpm2txz.8 )
 
 	# Strip all of the binaries and libraries in $DESTDIR/ of their
 	# debugging symbols.

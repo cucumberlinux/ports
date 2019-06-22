@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2016, 2018, 2019 Scott Court
+# Copyright 2017, 2019 Scott Court
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,23 +20,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# Cucumber Linux Buildinfo for pcre
+# Cucumber Linux Buildinfo for inetutils
 
-NAME=pcre2
-VERSION=10.31
-URL=(
-	https://downloads.sourceforge.net/pcre/$NAME-$VERSION.tar.bz2
-	https://downloads.sourceforge.net/pcre/$NAME-$VERSION.tar.bz2.sig
-)
+NAME=inetutils
+VERSION=1.9.4
+URL=(https://ftp.gnu.org/gnu/$NAME/$NAME-$VERSION.tar.xz)
 BUILDDEPS=()
-
-verify () {
-	pkgapi_gpg --verify $NAME-$VERSION.tar.bz2.sig || return 1
-}
 
 build () {
 
-	tar -xf "$OWD/$NAME-$VERSION.tar.bz2" || exit 1
+	tar -xf "$OWD/$NAME-$VERSION.tar.xz" || exit 1
 	cd $NAME-$VERSION || exit 1
 
 	# Apply any patches located in $OWD/patches
@@ -48,18 +41,17 @@ build () {
 		--libdir=/usr/lib${LIBDIRSUFFIX} \
 		--sysconfdir=/etc \
 		--localstatedir=/var \
-		--docdir=/usr/share/doc/pcre2-${VERSION} \
-		--enable-unicode \
-		--enable-jit \
-		--enable-pcre2-16 \
-		--enable-pcre2-32 \
-		--enable-pcre2grep-libz \
-		--enable-pcre2grep-libbz2 \
-		--enable-pcre2test-libreadline \
 		--disable-static \
+		--disable-servers \
 		--build=$CUCARCH-cucumber-linux || exit 1
 	pkgapi_make || exit 1
 	make install DESTDIR=$DESTDIR || exit 1
+
+	# Remove some binaries. These programs are provided by other packages.
+	rm -v $DESTDIR/usr/bin/{ping6,whois,ifconfig,ping,hostname,logger,\
+		dnsdomainname}
+	rm -v $DESTDIR/usr/share/man/man1/{ping6,whois,ifconfig,ping,hostname,\
+		logger,dnsdomainname}.1
 
 	# Strip all of the binaries and libraries in $DESTDIR/ of their
 	# debugging symbols.

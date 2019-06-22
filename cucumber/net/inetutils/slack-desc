@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+         |-----handy-ruler------------------------------------------------------|
+inetutils: inetutils (GNU network utilities)
+inetutils:
+inetutils: Inetutils is a collection of common network programs. It includes: An
+inetutils: ftp client; a telnet client; An rsh client; An rlogin client; A tftp
+inetutils: client; And much more...
+inetutils: 
+inetutils: Most of them are improved versions of programs originally from BSD.
+inetutils: Some others are original versions, written from scratch. 
+inetutils:
+inetutils:
+inetutils:
