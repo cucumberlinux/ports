@@ -44,6 +44,7 @@ build () {
 	# Uninstall an existing version of pip (if any) before we build Python3.
 	# Otherwise, our new build will not have pip included in it.
 	which pip3 && yes | pip3 uninstall pip
+	rm -rfv /usr/lib/python$MINOR_VERSION/site-packages/pip-*
 
 	# Do the actual build
 	./configure \
@@ -54,6 +55,7 @@ build () {
 		--enable-shared \
 		--with-system-expat \
 		--with-system-ffi \
+		--with-ensure-pip=yes \
 		--enable-unicode=ucs4 \
 		--build=$CUCARCH-cucumber-linux || exit 1
 	pkgapi_make || exit 1
@@ -83,6 +85,13 @@ build () {
 	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
 	# $DESTDIR/install, creating $DESTDIR/install if need be.
 	pkgapi_copy_package_scripts
+
+	# Check that pip was installed. Python is notorious for not installing
+	# pip correctly under the most bizarre circumstances.
+	if [ ! -x $DESTDIR/usr/bin/pip3 ]; then
+		echo "Error: pip3 was not installed"
+		exit 1
+	fi
 
 }
 
