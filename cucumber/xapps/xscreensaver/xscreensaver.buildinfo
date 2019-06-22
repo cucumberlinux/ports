@@ -23,7 +23,7 @@
 # Cucumber Linux Buildinfo for xscreensaver
 
 NAME=xscreensaver
-VERSION=5.39
+VERSION=5.42
 URL=(https://www.jwz.org/$NAME/$NAME-$VERSION.tar.gz)
 BUILDDEPS=(libglade xorg-applications)
 
@@ -34,6 +34,10 @@ build () {
 
 	# Apply any patches located in $OWD/patches
 	pkgapi_apply_patches || exit 1
+
+	# Remove some C++ comments from C code that prevents one file from
+	# compiling
+	sed -i '/^\/\//d' hacks/fontglide.c || exit 1
 
 	# Do the actual build
 	./configure \
