@@ -182,6 +182,13 @@ xscreensaver
 inetutils
 pinentry
 libreoffice
+vala
+xfce4-alsa-plugin
+xfce4-battery-plugin
+xfce4-places-plugin
+galculator
+glib-networking
+libsoup
 
 # TODO move this after qt5 has been installed and uncomment later
 # vlc
