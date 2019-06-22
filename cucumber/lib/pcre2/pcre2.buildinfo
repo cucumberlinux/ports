@@ -25,8 +25,8 @@
 NAME=pcre2
 VERSION=10.31
 URL=(
-	https://downloads.sourceforge.net/pcre/pcre2-10.31.tar.bz2
-	https://downloads.sourceforge.net/pcre/pcre2-10.31.tar.bz2.sig
+	https://downloads.sourceforge.net/pcre/$NAME-$VERSION.tar.bz2
+	https://downloads.sourceforge.net/pcre/$NAME-$VERSION.tar.bz2.sig
 )
 BUILDDEPS=()
 
@@ -60,11 +60,6 @@ build () {
 		--build=$CUCARCH-cucumber-linux || exit 1
 	pkgapi_make || exit 1
 	make install DESTDIR=$DESTDIR || exit 1
-
-	# Move the libraries to /lib{$LIBDIRSUFFIX}
-	mkdir -pv $DESTDIR/lib${LIBDIRSUFFIX}
-	mv -v $DESTDIR/usr/lib${LIBDIRSUFFIX}/libpcre.so.* $DESTDIR/lib${LIBDIRSUFFIX}/
-	ln -sfv ../../lib${LIBDIRSUFFIX}/$(readlink $DESTDIR/usr/lib${LIBDIRSUFFIX}/libpcre.so) $DESTDIR/usr/lib${LIBDIRSUFFIX}/libpcre.so
 
 	# Strip all of the binaries and libraries in $DESTDIR/ of their
 	# debugging symbols.
