@@ -1,4 +1,9 @@
 # The following packages have been removed in Cucumber Linux 2.0:
 openssl
 vim
+libsecret
+libusb
+palemoon
+upower
+qt4
 
