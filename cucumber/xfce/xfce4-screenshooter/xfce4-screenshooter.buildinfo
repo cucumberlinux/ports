@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2016 - 2019 Scott Court
+# Copyright 2017, 2019 Scott Court
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,31 +20,21 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# Cucumber Linux Buildinfo for python2
+# Cucumber Linux Buildinfo for xfce4-screenshooter
 
-NAME=python2
-TARNAME=Python
-VERSION=2.7.16
-MINOR_VERSION=$(echo $VERSION | cut -d . -f 1-2)
-URL=(https://www.python.org/ftp/python/$VERSION/$TARNAME-$VERSION.tar.xz https://www.python.org/ftp/python/$VERSION/$TARNAME-$VERSION.tar.xz.asc)
-BUILDDEPS=(libffi)
-
-verify () {
-        pkgapi_gpg --verify $TARNAME-$VERSION.tar.xz.asc || return 1
-}
+NAME=xfce4-screenshooter
+VERSION=1.8.2
+MINOR_VERSION=$(echo $VERSION | cut -d  . -f 1-2)
+URL=(http://archive.xfce.org/src/apps/$NAME/$MINOR_VERSION/$NAME-$VERSION.tar.bz2)
+BUILDDEPS=(gtk+)
 
 build () {
 
-	tar -xf "$OWD/Python-$VERSION.tar.xz" || exit 1
-	cd Python-$VERSION || exit 1
+	tar -xf "$OWD/$NAME-$VERSION.tar.bz2" || exit 1
+	cd $NAME-$VERSION || exit 1
 
 	# Apply any patches located in $OWD/patches
 	pkgapi_apply_patches || exit 1
-
-	# Uninstall an existing version of pip (if any) before we build
-	# Python2. Otherwise, our new build will not have pip included in it.
-	which pip && yes | pip uninstall pip
-	rm -rfv /usr/lib/python$MINOR_VERSION/site-packages/pip-*
 
 	# Do the actual build
 	./configure \
@@ -52,21 +42,10 @@ build () {
 		--libdir=/usr/lib${LIBDIRSUFFIX} \
 		--sysconfdir=/etc \
 		--localstatedir=/var \
-		--enable-shared \
-		--with-system-expat \
-		--with-system-ffi \
-		--with-ensurepip=yes \
-		--enable-unicode=ucs4 \
+		--disable-static \
 		--build=$CUCARCH-cucumber-linux || exit 1
 	pkgapi_make || exit 1
 	make install DESTDIR=$DESTDIR || exit 1
-	chmod -v 755 $DESTDIR/usr/lib/libpython2.7.so.1.0
-
-	if [ ! -z $LIBDIRSUFFIX ]; then
-		cp -r $DESTDIR/usr/lib${LIBDIRSUFFIX}/python2.7/* $DESTDIR/usr/lib/python2.7/
-		rm -r $DESTDIR/usr/lib${LIBDIRSUFFIX}/python2.7
-		ln -s ../lib/python2.7 $DESTDIR/usr/lib${LIBDIRSUFFIX}/python2.7
-	fi
 
 	# Strip all of the binaries and libraries in $DESTDIR/ of their
 	# debugging symbols.
@@ -75,13 +54,6 @@ build () {
 	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
 	# $DESTDIR/install, creating $DESTDIR/install if need be.
 	pkgapi_copy_package_scripts
-
-	# Check that pip was installed. Python is notorious for not installing
-	# pip correctly under the most bizarre circumstances.
-	if [ ! -x $DESTDIR/usr/bin/pip2 ]; then
-		echo "Error: pip2 was not installed"
-		exit 1
-	fi
 
 }
 

@@ -189,6 +189,9 @@ xfce4-places-plugin
 galculator
 glib-networking
 libsoup
+xfce4-screenshooter
+pm-utils
+qt5
 
 # TODO move this after qt5 has been installed and uncomment later
 # vlc

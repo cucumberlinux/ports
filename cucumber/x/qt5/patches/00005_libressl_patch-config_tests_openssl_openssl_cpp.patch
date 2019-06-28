@@ -1,0 +1,21 @@
+$OpenBSD: patch-config_tests_openssl_openssl_cpp,v 1.2 2018/10/30 08:08:40 rsadowski Exp $
+LibreSSL _is_ fine.
+Index: config.tests/openssl/openssl.cpp
+--- a/qtbase/config.tests/openssl/openssl.cpp
++++ b/qtbase/config.tests/openssl/openssl.cpp
+@@ -39,15 +39,7 @@
+ 
+ #include <openssl/opensslv.h>
+ 
+-#if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER-0 < 0x0090700fL || OPENSSL_VERSION_NUMBER-0 >= 0x10100000L
+-#  error "OpenSSL >= 0.9.7, and < 1.1.0 is required"
+-#endif
+-
+ #include <openssl/ssl.h>
+-
+-#if OPENSSL_VERSION_NUMBER-0 >= 0x10002000L && !defined(OPENSSL_NO_EC) && !defined(SSL_CTRL_SET_CURVES)
+-#  error "OpenSSL was reported as >= 1.0.2 but is missing required features, possibly it's libressl which is unsupported"
+-#endif
+ 
+ int main()
+ {

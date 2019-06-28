@@ -1,0 +1,171 @@
+#!/bin/bash
+
+# Copyright 2017, 2019 Scott Court
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Cucumber Linux Buildinfo for qt5
+
+NAME=qt5
+TARNAME=qt-everywhere-opensource-src
+VERSION=5.9.7
+MINOR_VERSION=$(echo $VERSION | cut -d . -f 1-2)
+URL=(https://download.qt.io/archive/qt/$MINOR_VERSION/$VERSION/single/$TARNAME-$VERSION.tar.xz)
+BUILDDEPS=(xorg-libraries dbus libressl)
+
+build () {
+
+	tar -xf "$OWD/$TARNAME-$VERSION.tar.xz" || exit 1
+	cd $TARNAME-$VERSION || exit 1
+
+	# Apply any patches located in $OWD/patches
+	pkgapi_apply_patches || exit 1
+
+	# Do the actual build
+	./configure \
+		-prefix /usr \
+		-sysconfdir /etc/xdg   \
+		-confirm-license \
+		-opensource \
+		-release \
+		-dbus-linked \
+		-openssl-linked \
+		-no-openvg \
+		-nomake examples \
+		-optimized-qmake \
+		-archdatadir /usr/lib/qt5 \
+		-bindir /usr/bin \
+		-libdir /usr/lib${LIBDIRSUFFIX} \
+		-plugindir /usr/lib${LIBDIRSUFFIX}/qt5/plugins \
+		-importdir /usr/lib${LIBDIRSUFFIX}/qt5/imports \
+		-headerdir /usr/include/qt5 \
+		-datadir /usr/share/qt5 \
+		-docdir /usr/share/doc/qt5 \
+		-translationdir /usr/share/qt5/translations \
+		-examplesdir /usr/share/doc/qt5/examples || exit 1
+	pkgapi_make || exit 1
+	make install INSTALL_ROOT=$DESTDIR || exit 1
+
+	# Remove the tests directory
+	rm -rv $DESTDIR/usr/tests
+
+	# Remove references to the build directory in the installed library
+	# dependency (prl) files
+	find $DESTDIR/ -name \*.prl \
+		-exec sed -i -e '/^QMAKE_PRL_BUILD_DIR/d' {} \;
+
+	QT5BINDIR=/usr/bin
+
+	# Install some icons
+	install -v -dm755 $DESTDIR/usr/share/pixmaps/
+	install -v -Dm644 \
+		qttools/src/assistant/assistant/images/assistant-128.png \
+		$DESTDIR/usr/share/pixmaps/assistant-qt5.png
+	install -v -Dm644 \
+		qttools/src/designer/src/designer/images/designer.png \
+		$DESTDIR/usr/share/pixmaps/designer-qt5.png
+	install -v -Dm644 \
+		qttools/src/linguist/linguist/images/icons/linguist-128-32.png \
+		$DESTDIR/usr/share/pixmaps/linguist-qt5.png
+	install -v -Dm644 \
+		qttools/src/qdbus/qdbusviewer/images/qdbusviewer-128.png \
+		$DESTDIR/usr/share/pixmaps/qdbusviewer-qt5.png &&
+	install -dm755 $DESTDIR/usr/share/applications
+
+	# Add some desktop files
+	mkdir -pv $DESTDIR/usr/share/applications
+	cat > $DESTDIR/usr/share/applications/assistant-qt5.desktop <<- EOF
+	[Desktop Entry]
+	Name=Qt5 Assistant
+	Comment=Shows Qt5 documentation and examples
+	Exec=$QT5BINDIR/assistant
+	Icon=assistant-qt5.png
+	Terminal=false
+	Encoding=UTF-8
+	Type=Application
+	Categories=Qt;Development;Documentation;
+	EOF
+
+	cat > $DESTDIR/usr/share/applications/designer-qt5.desktop <<- EOF
+	[Desktop Entry]
+	Name=Qt5 Designer
+	Comment=Design GUIs for Qt5 applications
+	Exec=$QT5BINDIR/designer
+	Icon=designer-qt5.png
+	MimeType=application/x-designer;
+	Terminal=false
+	Encoding=UTF-8
+	Type=Application
+	Categories=Qt;Development;
+	EOF
+
+	cat > $DESTDIR/usr/share/applications/linguist-qt5.desktop <<- EOF
+	[Desktop Entry]
+	Name=Qt5 Linguist
+	Comment=Add translations to Qt5 applications
+	Exec=$QT5BINDIR/linguist
+	Icon=linguist-qt5.png
+	MimeType=text/vnd.trolltech.linguist;application/x-linguist;
+	Terminal=false
+	Encoding=UTF-8
+	Type=Application
+	Categories=Qt;Development;
+	EOF
+
+	cat > $DESTDIR/usr/share/applications/qdbusviewer-qt5.desktop <<- EOF
+	[Desktop Entry]
+	Name=Qt5 QDbusViewer
+	GenericName=D-Bus Debugger
+	Comment=Debug D-Bus applications
+	Exec=$QT5BINDIR/qdbusviewer
+	Icon=qdbusviewer-qt5.png
+	Terminal=false
+	Encoding=UTF-8
+	Type=Application
+	Categories=Qt;Development;Debugger;
+	EOF
+
+	cat > $DESTDIR/usr/share/applications/qtconfig-qt5.desktop <<- EOF
+	[Desktop Entry]
+	Name=Qt5 Config
+	Comment=Configure Qt5 behavior, styles, fonts
+	Exec=$QT5BINDIR/qtconfig
+	Icon=qt5logo.png
+	Terminal=false
+	Encoding=UTF-8
+	Type=Application
+	Categories=Qt;Settings;
+	EOF
+
+	# Some packages such as VLC look for certain executables with a -qt5
+	# suffix. Create some symlinks to make them happy.
+	for file in moc uic rcc qmake lconvert lrelease lupdate; do
+		ln -sfrvn $file $DESTDIR/usr/bin/$file-qt5
+	done
+
+	# Strip all of the binaries and libraries in $DESTDIR/ of their
+	# debugging symbols.
+	pkgapi_strip
+
+	# Copies ths install scripts (slack-desc and doint.sh) from $OWD to
+	# $DESTDIR/install, creating $DESTDIR/install if need be.
+	pkgapi_copy_package_scripts
+
+}
+
